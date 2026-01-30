@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { reviewInputSchema } from "@/data/reviews/review.schema";
 
 export type ReviewInput = {
+  movieId: number;
   authorName: string;
   rating: number;
   content: string;
@@ -13,66 +15,78 @@ export default function ReviewForm({
   action,
 }: {
   movieId: number;
-  action: (movieId: number, data: ReviewInput) => Promise<void>;
+  action: (movieId: number, data: ReviewInput) => void;
 }) {
   const [authorName, setAuthorName] = useState("");
   const [rating, setRating] = useState(8);
   const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit() {
-    if (!authorName || !content) return;
-
-    setLoading(true);
-
-    await action(movieId, {
+  function submit() {
+    const input = {
+      movieId,
       authorName,
       rating,
       content,
-    });
+    };
+
+    const result = reviewInputSchema.safeParse(input);
+
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
+
+    setError(null);
+
+    action(movieId, result.data);
 
     setAuthorName("");
     setRating(8);
     setContent("");
-    setLoading(false);
   }
 
   return (
-    <div className="bg-zinc-900 rounded-xl p-6 mb-8">
+    <div className="bg-zinc-900 p-6 rounded-xl mb-8">
       <h3 className="text-lg font-semibold mb-4">
         Write a Review
       </h3>
 
+      {error && (
+        <p className="text-red-400 mb-3 text-sm">
+          {error}
+        </p>
+      )}
+
       <input
-        className="w-full bg-zinc-800 p-3 rounded mb-3"
-        placeholder="Your name"
         value={authorName}
         onChange={(e) => setAuthorName(e.target.value)}
+        placeholder="Your name"
+        className="w-full bg-zinc-800 p-3 rounded mb-3"
       />
 
       <input
         type="number"
         min={1}
         max={10}
-        className="w-full bg-zinc-800 p-3 rounded mb-3"
         value={rating}
         onChange={(e) => setRating(Number(e.target.value))}
+        className="w-full bg-zinc-800 p-3 rounded mb-3"
       />
 
       <textarea
-        className="w-full bg-zinc-800 p-3 rounded mb-4"
         rows={4}
-        placeholder="Your review..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
+        placeholder="Write your review..."
+        className="w-full bg-zinc-800 p-3 rounded mb-4"
       />
 
       <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="bg-yellow-500 text-black px-6 py-2 rounded font-semibold disabled:opacity-60"
+        onClick={submit}
+        className="bg-yellow-500 text-black px-6 py-2 rounded font-semibold"
       >
-        {loading ? "Posting..." : "Submit Review"}
+        Submit Review
       </button>
     </div>
   );

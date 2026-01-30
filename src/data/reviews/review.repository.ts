@@ -1,6 +1,7 @@
 import { reviewStore } from "./review.mock";
 import { Review } from "./review.types";
 import { containsProfanity } from "@/lib/moderation/profanity";
+import { reviewInputSchema } from "./review.schema";
 
 /* ---------------------------------------
    READ (moderation enforced)
@@ -21,22 +22,19 @@ export async function getReviewsByMovie(
 /* ---------------------------------------
    CREATE
 ---------------------------------------- */
-export async function createReview(input: {
-  movieId: number;
-  authorId: string;
-  username: string;
-  rating: number;
-  content: string;
-}) {
-  const abusive = containsProfanity(input.content);
+export async function createReview(raw: unknown): Promise<Review> {
+  // ✅ SERVER VALIDATION
+  const input = reviewInputSchema.parse(raw);
+
+  const isAbusive = containsProfanity(input.content);
 
   const review: Review = {
     id: crypto.randomUUID(),
     movieId: input.movieId,
 
     author: {
-      id: input.authorId,
-      username: input.username,
+      id: "user-1",
+      username: input.authorName,
     },
 
     rating: input.rating,
@@ -46,13 +44,13 @@ export async function createReview(input: {
     score: 0,
 
     moderation: {
-      isFlagged: abusive,
-      flagsCount: abusive ? 1 : 0,
-      reasons: abusive
-        ? ["Auto profanity detection"]
+      isFlagged: isAbusive,
+      flagsCount: isAbusive ? 1 : 0,
+      reasons: isAbusive
+        ? ["Auto-detected profanity"]
         : [],
-      hiddenReason: abusive
-        ? "Inappropriate language detected"
+      hiddenReason: isAbusive
+        ? "Contains inappropriate language"
         : undefined,
     },
 
@@ -63,9 +61,9 @@ export async function createReview(input: {
   };
 
   reviewStore.unshift(review);
+
   return review;
 }
-
 /* ---------------------------------------
    UPDATE
 ---------------------------------------- */
