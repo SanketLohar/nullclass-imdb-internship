@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { Movie } from "@/data/movies/movie.types";
+import type { Movie } from "@/data/movie.types";
 
 type Props = {
   movie: Movie;

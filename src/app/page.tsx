@@ -1,64 +1,164 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Hero from "@/components/Hero";
+import MovieCarousel from "@/components/MovieCarousel";
+
+import { Award, Clock, Star, TrendingUp } from "lucide-react";
+import Link from "next/link";
+
+export default function HomePage() {
+  const trendingMovies = [
+    {
+      id: 1,
+      title: "Dune: Part Two",
+      rating: 8.8,
+      image:
+        "https://images.unsplash.com/photo-1534809027769-b00d750a6bac?auto=format&fit=crop&w=800&q=80",
+      year: 2024,
+      genre: ["Action", "Adventure", "Sci-Fi"],
+    },
+    {
+      id: 2,
+      title: "Poor Things",
+      rating: 8.4,
+      image:
+        "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80",
+      year: 2023,
+      genre: ["Comedy", "Drama", "Romance"],
+    },
+    {
+      id: 3,
+      title: "Oppenheimer",
+      rating: 8.9,
+      image:
+        "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=800&q=80",
+      year: 2023,
+      genre: ["Biography", "Drama", "History"],
+    },
+    {
+      id: 4,
+      title: "The Batman",
+      rating: 8.5,
+      image:
+        "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&w=800&q=80",
+      year: 2024,
+      genre: ["Action", "Crime", "Drama"],
+    },
+    {
+      id: 5,
+      title: "Killers of the Flower Moon",
+      rating: 8.7,
+      image:
+        "https://images.unsplash.com/photo-1533928298208-27ff66555d8d?auto=format&fit=crop&w=800&q=80",
+      year: 2023,
+      genre: ["Crime", "Drama", "History"],
+    },
+  ];
+
+  const upcomingMovies = [
+    {
+      id: 6,
+      title: "Deadpool 3",
+      rating: 9.1,
+      image:
+        "https://images.unsplash.com/photo-1535016120720-40c646be5580?auto=format&fit=crop&w=800&q=80",
+      year: 2024,
+      genre: ["Action", "Comedy", "Adventure"],
+    },
+    {
+      id: 8,
+      title: "Kingdom of the Planet of the Apes",
+      rating: 8.3,
+      image:
+        "https://images.unsplash.com/photo-1533973860717-d49dfd14cf64?auto=format&fit=crop&w=800&q=80",
+      year: 2024,
+      genre: ["Action", "Adventure", "Drama"],
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div>
+      <Hero />
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Quick categories */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          {[
+            {
+              icon: TrendingUp,
+              label: "Trending",
+              path: "/movies?sort=trending",
+              color: "bg-yellow-500",
+            },
+            {
+              icon: Star,
+              label: "Top Rated",
+              path: "/top-rated",
+              color: "bg-purple-500",
+            },
+            {
+              icon: Clock,
+              label: "Coming Soon",
+              path: "/coming-soon",
+              color: "bg-blue-500",
+            },
+            {
+              icon: Award,
+              label: "Awards",
+              path: "/awards",
+              color: "bg-red-500",
+            },
+          ].map((category, index) => (
+            <Link
+              key={index}
+              href={category.path}
+              className={`${category.color} p-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-80 transition-opacity`}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <category.icon className="w-5 h-5" />
+              <span className="font-medium">
+                {category.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Trending */}
+        <section className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-yellow-500" />
+              Trending Now
+            </h2>
+
+            <Link
+              href="/movies?sort=trending"
+              className="text-yellow-500 hover:text-yellow-400"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              View All
+            </Link>
+          </div>
+
+          <MovieCarousel movies={trendingMovies} />
+        </section>
+
+        {/* Coming soon */}
+        <section className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Clock className="w-6 h-6 text-yellow-500" />
+              Coming Soon
+            </h2>
+
+            <Link
+              href="/coming-soon"
+              className="text-yellow-500 hover:text-yellow-400"
+            >
+              View All
+            </Link>
+          </div>
+
+          <MovieCarousel movies={upcomingMovies} />
+        </section>
       </main>
     </div>
   );

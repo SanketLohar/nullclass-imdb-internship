@@ -2,7 +2,7 @@
 
 import { Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
-import { useWatchlist } from "@/lib/watchlist.context";
+import { useWatchlist } from "@/_wip/watchlist.context";
 
 export type MovieCardProps = {
   id: string;

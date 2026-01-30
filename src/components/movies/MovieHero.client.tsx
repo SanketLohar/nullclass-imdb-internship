@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Star, X, Heart } from "lucide-react";
 import { useState } from "react";
 
-import type { Movie } from "@/data/movies/movie.types";
-import { useWatchlist } from "@/lib/watchlist.context";
+import type { Movie } from "@/data/movie.types";
+import { useWatchlist } from "@/_wip/watchlist.context";
 
 type Props = {
   movie: Movie;

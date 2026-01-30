@@ -1,5 +1,5 @@
-import type { Movie } from "./movie.types";
-import { moviesMock } from "./movie.mock";
+import type { Movie } from "../movie.types";
+import { moviesMock } from "../movie.mock";
 
 /**
  * Fetch single movie

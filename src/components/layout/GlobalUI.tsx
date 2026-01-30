@@ -1,7 +1,7 @@
 "use client";
 
 import Toast from "@/components/ui/Toast";
-import { useWatchlist } from "@/lib/watchlist.context";
+import { useWatchlist } from "@/_wip/watchlist.context";
 
 export default function GlobalUI() {
   const { toast } = useWatchlist();
