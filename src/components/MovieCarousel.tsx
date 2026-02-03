@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 import MovieCard from "./MovieCard";
 
@@ -10,6 +10,7 @@ type Movie = {
   title: string;
   rating: number;
   image: string;
+  posterUrl?: string;
   year: number;
   genre: string[];
 };
@@ -19,62 +20,54 @@ export default function MovieCarousel({
 }: {
   movies: Movie[];
 }) {
-  const [startIndex, setStartIndex] = useState(0);
-  const visibleMovies = 4;
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const nextSlide = () => {
-    setStartIndex((prev) =>
-      prev + visibleMovies >= movies.length ? 0 : prev + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setStartIndex((prev) =>
-      prev === 0
-        ? Math.max(0, movies.length - visibleMovies)
-        : prev - 1
-    );
+  const scroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = scrollContainerRef.current.clientWidth * 0.75;
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
   };
 
   return (
     <div className="relative group">
-      <div className="overflow-hidden">
-        <div
-          className="flex transition-transform duration-500"
-          style={{
-            transform: `translateX(-${startIndex * (100 / visibleMovies)}%)`,
-          }}
-        >
-          {movies.map((movie) => (
-            <div
-              key={movie.id}
-              className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-2"
-            >
-              <Link href={`/movies/${movie.id}`}>
-                <MovieCard {...movie} />
-              </Link>
-            </div>
-          ))}
-        </div>
+      {/* Scroll Buttons */}
+      <button
+        onClick={() => scroll("left")}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 text-foreground p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 shadow-lg"
+        aria-label="Scroll left"
+      >
+        <ChevronLeft className="w-6 h-6" />
+      </button>
+
+      <button
+        onClick={() => scroll("right")}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 text-foreground p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 shadow-lg"
+        aria-label="Scroll right"
+      >
+        <ChevronRight className="w-6 h-6" />
+      </button>
+
+      {/* Carousel Container */}
+      <div
+        ref={scrollContainerRef}
+        className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory py-4 px-1"
+        style={{ scrollBehavior: "smooth" }}
+      >
+        {movies.map((movie) => (
+          <div
+            key={movie.id}
+            className="flex-none w-[160px] sm:w-[200px] md:w-[240px] snap-start"
+          >
+            <Link href={`/movies/${movie.id}`} className="block h-full">
+              <MovieCard {...movie} />
+            </Link>
+          </div>
+        ))}
       </div>
-
-      {movies.length > visibleMovies && (
-        <>
-          <button
-            onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/60 p-2 rounded-full opacity-0 group-hover:opacity-100"
-          >
-            <ChevronLeft />
-          </button>
-
-          <button
-            onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/60 p-2 rounded-full opacity-0 group-hover:opacity-100"
-          >
-            <ChevronRight />
-          </button>
-        </>
-      )}
     </div>
   );
 }

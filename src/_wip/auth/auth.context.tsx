@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { User } from "./auth.types";
 
 type AuthContextValue = {
@@ -18,21 +18,28 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") return null;
+  const [user, setUser] = useState<User | null>(null);
 
+  useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
+      if (raw) {
+        setUser(JSON.parse(raw));
+      }
     } catch {
-      return null;
+      // ignore
     }
-  });
+  }, []);
 
   function login() {
+    // Generate unique user ID for this session
+    const userId = localStorage.getItem("user-id") || `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem("user-id", userId);
+
     const mockUser: User = {
-      id: "user-1",
-      name: "Sanket",
+      id: userId,
+      name: "Demo User",
+      username: "demo_user", // Add username field
     };
 
     localStorage.setItem(

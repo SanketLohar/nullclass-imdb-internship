@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useAuth } from "@/_wip/auth/auth.context";
 
 import type {
   WatchlistMovie,
@@ -33,6 +34,7 @@ type WatchlistContextType = {
   toggle: (movie: WatchlistInput) => Promise<void>;
   isSaved: (id: string) => boolean;
   toast: ToastState | null;
+  isLoading: boolean;
 };
 
 /* ---------------------------------------
@@ -55,6 +57,8 @@ export function WatchlistProvider({
 }) {
   const [list, setList] = useState<WatchlistMovie[]>([]);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
   const channelRef = useRef<BroadcastChannel | null>(null);
 
@@ -62,20 +66,32 @@ export function WatchlistProvider({
      INIT + SYNC LISTENER
   ---------------------------------------- */
   useEffect(() => {
+    if (!user) {
+      setList([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
     // initial load
-    getWatchlist().then(setList);
+    getWatchlist(user.id).then((items) => {
+      setList(items);
+      setIsLoading(false);
+    });
 
     // cross-tab channel
     const channel = new BroadcastChannel(CHANNEL);
     channelRef.current = channel;
 
     channel.onmessage = async () => {
-      const latest = await getWatchlist();
-      setList(latest);
+      if (user) {
+        const latest = await getWatchlist(user.id);
+        setList(latest);
+      }
     };
 
     return () => channel.close();
-  }, []);
+  }, [user]);
 
   /* ---------------------------------------
      BROADCAST CHANGE
@@ -88,15 +104,18 @@ export function WatchlistProvider({
      TOGGLE WATCHLIST
   ---------------------------------------- */
   const toggle = async (movie: WatchlistInput) => {
+    if (!user) return; // Should be handled by UI, but safe guard
+
+    const movieId = String(movie.id);
     const existing = list.find(
-      (m) => m.id === movie.id
+      (m: WatchlistMovie) => String(m.id) === movieId
     );
 
     // ❌ REMOVE
     if (existing) {
-      await removeFromWatchlist(movie.id);
-      setList((prev) =>
-        prev.filter((m) => m.id !== movie.id)
+      await removeFromWatchlist(user.id, movieId);
+      setList((prev: WatchlistMovie[]) =>
+        prev.filter((m: WatchlistMovie) => String(m.id) !== movieId)
       );
 
       broadcast();
@@ -104,8 +123,9 @@ export function WatchlistProvider({
       setToast({
         message: "Removed from watchlist",
         undo: async () => {
+          if (!user) return;
           await addToWatchlist(existing);
-          setList((prev) => [
+          setList((prev: WatchlistMovie[]) => [
             existing,
             ...prev,
           ]);
@@ -118,21 +138,24 @@ export function WatchlistProvider({
     else {
       const item: WatchlistMovie = {
         ...movie,
+        id: movieId, // Ensure ID is stored as string
+        userId: user.id,
         addedAt: Date.now(),
       };
 
       await addToWatchlist(item);
-      setList((prev) => [item, ...prev]);
+      setList((prev: WatchlistMovie[]) => [item, ...prev]);
 
       broadcast();
 
       setToast({
         message: "Added to watchlist",
         undo: async () => {
-          await removeFromWatchlist(item.id);
-          setList((prev) =>
+          if (!user) return;
+          await removeFromWatchlist(user.id, movieId);
+          setList((prev: WatchlistMovie[]) =>
             prev.filter(
-              (m) => m.id !== item.id
+              (m: WatchlistMovie) => String(m.id) !== movieId
             )
           );
           broadcast();
@@ -144,12 +167,12 @@ export function WatchlistProvider({
     setTimeout(() => setToast(null), 4000);
   };
 
-  const isSaved = (id: string) =>
-    list.some((m) => m.id === id);
+  const isSaved = (id: string | number) =>
+    list.some((m: WatchlistMovie) => String(m.id) === String(id));
 
   return (
     <WatchlistContext.Provider
-      value={{ list, toggle, isSaved, toast }}
+      value={{ list, toggle, isSaved, toast, isLoading }}
     >
       {children}
     </WatchlistContext.Provider>

@@ -1,5 +1,6 @@
-import Image from "next/image";
-import { ACTORS } from "@/data/actors";
+import { getActorById } from "@/data/actors/actor.service";
+import FilmographyExplorer from "@/components/actors/FilmographyExplorer.client";
+import { Suspense } from "react";
 
 export default async function KnownForPage({
   params,
@@ -7,10 +8,45 @@ export default async function KnownForPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const actorId = Number(id);
 
-  const actor =
-    ACTORS.find((a) => a.id === Number(id)) ??
-    ACTORS[0];
+  let filmography: any[] = [];
+
+  if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
+    try {
+      const { tmdbService } = await import("@/lib/tmdb/tmdb.service");
+      const [credits, config] = await Promise.all([
+        tmdbService.getActorCredits(actorId),
+        tmdbService.getConfig()
+      ]);
+
+      filmography = (credits?.cast || []).map(c => ({
+        id: c.id,
+        title: c.title,
+        role: c.character,
+        year: c.release_date ? new Date(c.release_date).getFullYear() : 0,
+        image: c.poster_path
+          ? `${config.images.secure_base_url}w500${c.poster_path}`
+          : "/placeholder-movie.jpg",
+        poster: c.poster_path
+          ? `${config.images.secure_base_url}w500${c.poster_path}`
+          : "/placeholder-movie.jpg",
+        rating: c.vote_average,
+        genre: "" // Genre needing extra fetch, leaving empty for list
+      }));
+
+    } catch (e) {
+      console.error("Failed to fetch filmography", e);
+    }
+  }
+
+  // Fallback to mock if empty (and if mock exists, but for now we assume TMDB works or we leave empty)
+  if (filmography.length === 0) {
+    const actor = await getActorById(actorId);
+    if (actor) {
+      filmography = actor.filmography || [];
+    }
+  }
 
   return (
     <section>
@@ -18,37 +54,15 @@ export default async function KnownForPage({
         Filmography
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-        {actor.filmography.map((movie) => (
-          <div
-            key={movie.id}
-            className="rounded-xl overflow-hidden bg-zinc-900 hover:scale-[1.03] transition"
-          >
-            <div className="relative aspect-[2/3]">
-              <Image
-                src={movie.poster}
-                alt={movie.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-
-            <div className="p-3">
-              <p className="font-medium">
-                {movie.title}
-              </p>
-
-              <p className="text-sm text-zinc-400">
-                {movie.year} · {movie.role}
-              </p>
-
-              <p className="text-xs text-yellow-400 mt-1">
-                ⭐ {movie.rating}
-              </p>
-            </div>
+      <Suspense
+        fallback={
+          <div className="h-[600px] flex items-center justify-center">
+            <div className="text-zinc-400">Loading filmography...</div>
           </div>
-        ))}
-      </div>
+        }
+      >
+        <FilmographyExplorer filmography={filmography} />
+      </Suspense>
     </section>
   );
 }

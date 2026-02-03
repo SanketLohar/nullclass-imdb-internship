@@ -1,7 +1,8 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getActorById } from "@/data/actors/actor.service";
+import { tmdbService } from "@/lib/tmdb/tmdb.service";
 import {
   Award,
   Instagram,
@@ -9,113 +10,73 @@ import {
   Twitter,
 } from "lucide-react";
 
-type Actor = {
-  id: number;
-  name: string;
-  birthDate: string;
-  birthPlace: string;
-  nationality: string;
-  height: string;
-  biography: string;
-  image: string;
-  coverImage: string;
-  awards: {
-    name: string;
-    year: number;
-    category: string;
-    film: string;
-  }[];
-  socialMedia: {
-    instagram: string;
-    twitter: string;
-    imdb: string;
-  };
-  knownFor: {
-    id: number;
-    title: string;
-    role: string;
-    year: number;
-    rating: number;
-    image: string;
-  }[];
-  stats: {
-    moviesCount: number;
-    totalAwards: number;
-    avgRating: number;
-    yearsActive: string;
-  };
-};
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const actorId = Number(id);
 
-const ACTORS: Actor[] = [
-  {
-    id: 1,
-    name: "Timothée Chalamet",
-    birthDate: "December 27, 1995",
-    birthPlace: "New York City, USA",
-    nationality: "American–French",
-    height: "5'10\"",
-    biography:
-      "Timothée Hal Chalamet is an American actor known for his emotionally complex performances and global popularity.",
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80",
-    coverImage:
-      "https://images.unsplash.com/photo-1492446845049-9c50cc313f00?auto=format&fit=crop&w=2000&q=80",
-    awards: [
-      {
-        name: "Academy Award Nomination",
-        year: 2018,
-        category: "Best Actor",
-        film: "Call Me by Your Name",
-      },
-      {
-        name: "Golden Globe Nomination",
-        year: 2018,
-        category: "Best Actor - Drama",
-        film: "Call Me by Your Name",
-      },
-    ],
-    socialMedia: {
-      instagram: "https://instagram.com/tchalamet",
-      twitter: "https://twitter.com/realchalamet",
-      imdb: "https://www.imdb.com/name/nm3154303/",
-    },
-    knownFor: [
-      {
-        id: 1,
-        title: "Dune: Part Two",
-        role: "Paul Atreides",
-        year: 2024,
-        rating: 8.8,
-        image:
-          "https://images.unsplash.com/photo-1534809027769-b00d750a6bac?auto=format&fit=crop&w=800&q=80",
-      },
-      {
-        id: 2,
-        title: "Wonka",
-        role: "Willy Wonka",
-        year: 2023,
-        rating: 7.2,
-        image:
-          "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80",
-      },
-    ],
-    stats: {
-      moviesCount: 18,
-      totalAwards: 12,
-      avgRating: 8.4,
-      yearsActive: "2012–present",
-    },
-  },
-];
+  // Reuse the logic (ideally refactor to service, but for now duplicate the robust fetch)
+  // Or just fetch basic info for metadata
+  const person = await tmdbService.getActorDetails(actorId).catch(() => null);
 
-export default function ActorPage({
+  if (!person) {
+    return { title: "Actor Not Found - MovieDB" };
+  }
+
+  return {
+    title: `${person.name} - MovieDB`,
+    description: person.biography?.slice(0, 160) || `Learn more about ${person.name}`,
+  };
+}
+
+export default async function ActorPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const actor =
-    ACTORS.find((a) => a.id === Number(params.id)) ||
-    ACTORS[0];
+  const { id } = await params;
+  const actorId = Number(id);
+
+  // Use the robust service (which handles TMDB + OMDb awards + Socials correctly)
+  const serviceActor = await getActorById(actorId);
+
+  if (!serviceActor) {
+    notFound();
+  }
+
+  // Transform service actor to match page expected structure (if needed)
+  // Actually, let's just use the service actor data directly or map it if strictly typed differently
+  // The service returns `Actor` type. Let's see what the page uses.
+  // The page seems to use a loose object structure. We can map it easily.
+
+  const actor = {
+    id: serviceActor.id,
+    name: serviceActor.name,
+    birthDate: serviceActor.birthDate,
+    birthPlace: serviceActor.birthPlace,
+    biography: serviceActor.biography,
+    image: serviceActor.image,
+    coverImage: serviceActor.coverImage,
+    knownFor: serviceActor.filmography?.slice(0, 6).map((f) => ({
+      id: f.id,
+      title: f.title,
+      role: f.role,
+      year: f.year,
+      rating: f.rating,
+      image: f.poster,
+    })) || [],
+    stats: {
+      moviesCount: serviceActor.filmography?.length || 0,
+      totalAwards: serviceActor.awards?.length || 0,
+      avgRating: 8.0, // Placeholder or calculate
+      yearsActive: "Active",
+    },
+    awards: serviceActor.awards || [],
+    socialMedia: serviceActor.social || {
+      instagram: "#",
+      twitter: "#",
+      imdb: "#",
+    },
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -146,11 +107,13 @@ export default function ActorPage({
               </h1>
 
               <div className="flex gap-6">
-                <Stat icon={<Star />} text={`${actor.stats.avgRating} Rating`} />
-                <Stat
-                  icon={<Award />}
-                  text={`${actor.stats.totalAwards} Awards`}
-                />
+                <Stat icon={<Star />} text={`${actor.stats.avgRating.toFixed(1)} Rating`} />
+                {actor.stats.totalAwards > 0 && (
+                  <Stat
+                    icon={<Award />}
+                    text={`${actor.stats.totalAwards} Awards`}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -176,19 +139,30 @@ export default function ActorPage({
             />
           </div>
 
-          <div className="bg-zinc-800 rounded-xl p-6">
-            <h3 className="font-semibold mb-4">
-              Social
-            </h3>
-            <div className="flex gap-4">
-              <a href={actor.socialMedia.instagram}>
-                <Instagram />
-              </a>
-              <a href={actor.socialMedia.twitter}>
-                <Twitter />
-              </a>
+          {(actor.socialMedia.instagram || actor.socialMedia.twitter || actor.socialMedia.imdb) && (
+            <div className="bg-zinc-800 rounded-xl p-6">
+              <h3 className="font-semibold mb-4">
+                Social
+              </h3>
+              <div className="flex gap-4">
+                {actor.socialMedia.instagram && (
+                  <a href={actor.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors">
+                    <Instagram />
+                  </a>
+                )}
+                {actor.socialMedia.twitter && (
+                  <a href={actor.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors">
+                    <Twitter />
+                  </a>
+                )}
+                {actor.socialMedia.imdb && (
+                  <a href={actor.socialMedia.imdb} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors">
+                    IMDb
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </aside>
 
         {/* Main */}

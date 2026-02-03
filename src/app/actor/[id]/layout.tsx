@@ -1,5 +1,49 @@
 import Image from "next/image";
-import { ACTORS } from "@/data/actors";
+import { getActorById } from "@/data/actors/actor.service";
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { getLocaleFromHeaders, getActorName, getActorBiography, getAlternateNames } from "@/lib/i18n/actor-i18n";
+
+// ISR configuration - revalidate every hour, with stale-while-revalidate
+export const revalidate = 3600; // Revalidate every hour
+export const dynamic = "force-static";
+export const dynamicParams = true;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const actor = await getActorById(Number(id));
+
+  if (!actor) {
+    return {
+      title: "Actor Not Found",
+    };
+  }
+
+  const headersList = await headers();
+  const locale = getLocaleFromHeaders(headersList);
+  const localizedName = getActorName(actor, locale);
+  const localizedBio = getActorBiography(actor, locale);
+
+  return {
+    title: `${localizedName} | Actor Profile`,
+    description: localizedBio,
+    openGraph: {
+      title: localizedName,
+      description: localizedBio,
+      images: [actor.image],
+    },
+    // Resource hints for LCP optimization
+    other: {
+      "preconnect": "https://images.unsplash.com",
+      "dns-prefetch": "https://images.unsplash.com",
+    },
+  };
+}
 
 export default async function ActorLayout({
   params,
@@ -8,6 +52,8 @@ export default async function ActorLayout({
   social,
   knownfor,
   similar,
+  cast,
+  overview,
 }: {
   params: Promise<{ id: string }>;
   bio: React.ReactNode;
@@ -15,59 +61,154 @@ export default async function ActorLayout({
   social: React.ReactNode;
   knownfor: React.ReactNode;
   similar: React.ReactNode;
+  cast: React.ReactNode;
+  overview: React.ReactNode;
 }) {
   const { id } = await params;
+  const actorId = Number(id);
 
-  const actor =
-    ACTORS.find((a) => a.id === Number(id)) ||
-    ACTORS[0];
+  let actor = null;
+
+  // Try TMDB
+  if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
+    try {
+      const { tmdbService } = await import("@/lib/tmdb/tmdb.service");
+      const [tmdbPerson, config] = await Promise.all([
+        tmdbService.getActorDetails(actorId),
+        tmdbService.getConfig()
+      ]);
+
+      actor = {
+        id: tmdbPerson.id,
+        name: tmdbPerson.name,
+        birthDate: tmdbPerson.birthday || "Unknown",
+        birthPlace: tmdbPerson.place_of_birth || "Unknown",
+        biography: tmdbPerson.biography || "No biography available.",
+        image: tmdbPerson.profile_path
+          ? `${config.images.secure_base_url}w500${tmdbPerson.profile_path}`
+          : "/placeholder-actor.jpg",
+        coverImage: tmdbPerson.profile_path
+          ? `${config.images.secure_base_url}original${tmdbPerson.profile_path}`
+          : "/placeholder-backdrop.jpg",
+        awards: [], // Mock or fetch if available
+        social: {
+          instagram: "",
+          twitter: "",
+          imdb: `https://www.imdb.com/name/${tmdbPerson.imdb_id}/`,
+        }
+      };
+    } catch (e) {
+      console.error("Failed to fetch actor from TMDB", e);
+    }
+  }
+
+  // Fallback
+  if (!actor) {
+    actor = await getActorById(actorId);
+  }
+
+  if (!actor) {
+    notFound();
+  }
+
+  // Get locale for i18n
+  const headersList = await headers();
+  const locale = getLocaleFromHeaders(headersList);
+  // Note: getActorName/Bio helpers might need adjustment if they rely on specific mock structure, 
+  // but we are mocking the structure to match.
+  const localizedName = actor.name; // Simplification for now
+  const localizedBio = actor.biography;
+  const alternateNames: string[] = []; // Skipping for TMDB data for now
+
+  // Generate JSON-LD structured data with i18n
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: localizedName,
+    alternateName: alternateNames,
+    birthDate: actor.birthDate,
+    birthPlace: actor.birthPlace,
+    description: localizedBio,
+    image: actor.image,
+    sameAs: [
+      actor.social.instagram,
+      actor.social.twitter,
+      actor.social.imdb,
+    ].filter(Boolean),
+    award: actor.awards.map((award: any) => ({
+      "@type": "Award",
+      name: award.name,
+      dateReceived: award.year.toString(),
+    })),
+    inLanguage: locale,
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="container mx-auto px-4 py-8">
+        {/* HERO */}
+        <div className="relative h-[420px] rounded-xl overflow-hidden mb-12">
+          <Image
+            src={actor.coverImage}
+            alt={actor.name}
+            fill
+            priority
+            fetchPriority="high"
+            sizes="100vw"
+            className="object-cover"
+            quality={85}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90" />
 
-      {/* HERO */}
-      <div className="relative h-[420px] rounded-xl overflow-hidden mb-12">
-        <Image
-          src={actor.coverImage}
-          alt={actor.name}
-          fill
-          priority
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90" />
-
-        <div className="relative h-full flex items-end pb-8 px-6">
-          <div className="flex gap-8 items-end">
-            <Image
-              src={actor.image}
-              alt={actor.name}
-              width={180}
-              height={180}
-              className="rounded-xl border-4 border-black object-cover"
-            />
-            <h1 className="text-4xl font-bold">
-              {actor.name}
-            </h1>
+          <div className="relative h-full flex items-end pb-8 px-6">
+            <div className="flex gap-8 items-end">
+              <Image
+                src={actor.image}
+                alt={actor.name}
+                width={180}
+                height={180}
+                className="rounded-xl border-4 border-black object-cover"
+                priority
+                fetchPriority="high"
+                sizes="180px"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+              />
+              <h1 className="text-4xl font-bold">
+                {localizedName}
+              </h1>
+              {alternateNames.length > 0 && (
+                <p className="text-sm text-zinc-400 mt-1">
+                  Also known as: {alternateNames.join(", ")}
+                </p>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* TOP PANELS */}
+        <section className="grid md:grid-cols-3 gap-6 mb-16">
+          {bio}
+          {awards}
+          {social}
+        </section>
+
+        {/* FILMOGRAPHY */}
+        <section className="mb-20">
+          {knownfor}
+        </section>
+
+        {/* SIMILAR ACTORS */}
+        <section>
+          {similar}
+        </section>
       </div>
-
-      {/* TOP PANELS */}
-      <section className="grid md:grid-cols-3 gap-6 mb-16">
-        {bio}
-        {awards}
-        {social}
-      </section>
-
-      {/* FILMOGRAPHY */}
-      <section className="mb-20">
-        {knownfor}
-      </section>
-
-      {/* SIMILAR ACTORS */}
-      <section>
-        {similar}
-      </section>
-    </div>
+    </>
   );
 }

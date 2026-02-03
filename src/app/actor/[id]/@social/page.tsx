@@ -1,17 +1,17 @@
-import { ACTORS } from "@/data/actors";
+import { getActorById } from "@/data/actors/actor.service";
 import { Instagram, Twitter, Globe } from "lucide-react";
-import { use } from "react";
 
-export default function SocialPanel({
+export default async function SocialPanel({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params);
+  const { id } = await params;
+  const actor = await getActorById(Number(id));
 
-  const actor =
-    ACTORS.find((a) => a.id === Number(id)) ??
-    ACTORS[0];
+  if (!actor) {
+    return null;
+  }
 
   return (
     <section>

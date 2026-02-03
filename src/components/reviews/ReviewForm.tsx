@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { reviewInputSchema } from "@/data/reviews/review.schema";
+import { useState, useRef } from "react";
+import { nanoid } from "nanoid";
 
-export type ReviewInput = {
-  movieId: number;
-  authorName: string;
-  rating: number;
-  content: string;
+import { reviewSchema } from "@/data/reviews/review.schema";
+import { useReviewDraft } from "@/hooks/useReviewDraft";
+import type { ReviewInput } from "@/data/reviews/review.schema";
+
+export type ReviewSubmitPayload = {
+  input: ReviewInput;
+  idempotencyKey: string;
 };
 
 export default function ReviewForm({
@@ -15,35 +17,54 @@ export default function ReviewForm({
   action,
 }: {
   movieId: number;
-  action: (movieId: number, data: ReviewInput) => void;
+  action: (payload: ReviewSubmitPayload) => void;
 }) {
-  const [authorName, setAuthorName] = useState("");
+  // Removed authorName - will use logged-in user from auth context
   const [rating, setRating] = useState(8);
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const keyRef = useRef(nanoid());
+
+  useReviewDraft({
+    movieId,
+    authorName: "", // Not used anymore, but keep for draft compatibility
+    rating,
+    content,
+    setAuthorName: () => {}, // No-op since we don't use authorName
+    setRating,
+    setContent,
+  });
+
   function submit() {
-    const input = {
+    const input: ReviewInput = {
       movieId,
-      authorName,
       rating,
       content,
     };
 
-    const result = reviewInputSchema.safeParse(input);
+    const parsed = reviewSchema.safeParse(input);
 
-    if (!result.success) {
-      setError(result.error.issues[0].message);
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
       return;
     }
 
     setError(null);
 
-    action(movieId, result.data);
+    action({
+      input: parsed.data,
+      idempotencyKey: keyRef.current,
+    });
 
-    setAuthorName("");
+    import("@/lib/drafts/reviewDraft.db").then(
+      ({ clearDraft }) => clearDraft(movieId)
+    );
+
     setRating(8);
     setContent("");
+
+    keyRef.current = nanoid();
   }
 
   return (
@@ -58,33 +79,38 @@ export default function ReviewForm({
         </p>
       )}
 
-      <input
-        value={authorName}
-        onChange={(e) => setAuthorName(e.target.value)}
-        placeholder="Your name"
-        className="w-full bg-zinc-800 p-3 rounded mb-3"
-      />
+      {/* Removed name field - using logged-in user instead */}
 
-      <input
-        type="number"
-        min={1}
-        max={10}
-        value={rating}
-        onChange={(e) => setRating(Number(e.target.value))}
-        className="w-full bg-zinc-800 p-3 rounded mb-3"
-      />
+      <div className="mb-3">
+        <label className="block text-sm text-zinc-400 mb-2">
+          Rating (1-10)
+        </label>
+        <input
+          type="number"
+          min={1}
+          max={10}
+          value={rating}
+          onChange={(e) => setRating(Number(e.target.value))}
+          className="w-full bg-zinc-800 p-3 rounded text-white"
+        />
+      </div>
 
-      <textarea
-        rows={4}
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Write your review..."
-        className="w-full bg-zinc-800 p-3 rounded mb-4"
-      />
+      <div className="mb-4">
+        <label className="block text-sm text-zinc-400 mb-2">
+          Your Review
+        </label>
+        <textarea
+          rows={4}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Write your review..."
+          className="w-full bg-zinc-800 p-3 rounded text-white"
+        />
+      </div>
 
       <button
         onClick={submit}
-        className="bg-yellow-500 text-black px-6 py-2 rounded font-semibold"
+        className="bg-yellow-500 text-black px-6 py-2 rounded font-semibold hover:bg-yellow-400 transition-colors"
       >
         Submit Review
       </button>

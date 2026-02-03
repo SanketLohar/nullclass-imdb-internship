@@ -3,18 +3,18 @@ import { WatchlistMovie } from "./watchlist.types";
 const DB_NAME = "movieverse";
 const STORE_NAME = "watchlist";
 
-function getStore(
-  mode: IDBTransactionMode
-): Promise<IDBObjectStore> {
+function getStore(mode: IDBTransactionMode): Promise<IDBObjectStore> {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
+    const request = indexedDB.open(DB_NAME, 2);
 
     request.onupgradeneeded = () => {
       const db = request.result;
+
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, {
-          keyPath: "id",
+        const store = db.createObjectStore(STORE_NAME, {
+          keyPath: ["userId", "id"], // ✅ COMPOSITE KEY
         });
+        store.createIndex("userId", "userId", { unique: false });
       }
     };
 
@@ -28,26 +28,45 @@ function getStore(
   });
 }
 
-export async function getWatchlist(): Promise<
-  WatchlistMovie[]
-> {
+/* ---------------------------------------
+   READ
+---------------------------------------- */
+
+export async function getWatchlist(userId: string): Promise<WatchlistMovie[]> {
   const store = await getStore("readonly");
+  const index = store.index("userId");
 
   return new Promise((resolve) => {
-    const req = store.getAll();
-    req.onsuccess = () =>
-      resolve(req.result as WatchlistMovie[]);
+    const req = index.getAll(userId);
+    req.onsuccess = () => resolve(req.result as WatchlistMovie[]);
+    req.onerror = () => resolve([]);
   });
 }
 
-export async function addToWatchlist(
-  movie: WatchlistMovie
-) {
+/* ---------------------------------------
+   ADD
+---------------------------------------- */
+
+export async function addToWatchlist(movie: WatchlistMovie) {
   const store = await getStore("readwrite");
-  store.put(movie);
+
+  return new Promise<void>((resolve, reject) => {
+    const req = store.put(movie); // ✅ ID UNTOUCHED
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
 }
 
-export async function removeFromWatchlist(id: string) {
+/* ---------------------------------------
+   REMOVE
+---------------------------------------- */
+
+export async function removeFromWatchlist(userId: string, movieId: string) {
   const store = await getStore("readwrite");
-  store.delete(id);
+
+  return new Promise<void>((resolve, reject) => {
+    const req = store.delete([userId, movieId]); // ✅ COMPOSITE KEY
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
 }

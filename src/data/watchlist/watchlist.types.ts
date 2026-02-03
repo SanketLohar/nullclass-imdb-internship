@@ -1,5 +1,6 @@
 export type WatchlistMovie = {
   id: string;
+  userId: string;
   title: string;
   posterUrl: string;
   releaseYear: number;
@@ -12,5 +13,5 @@ export type WatchlistMovie = {
  */
 export type WatchlistInput = Omit<
   WatchlistMovie,
-  "addedAt"
+  "addedAt" | "userId"
 >;

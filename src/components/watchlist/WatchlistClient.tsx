@@ -1,14 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useWatchlist } from "@/_wip/watchlist.context";
-import MovieCard from "@/components/movies/MovieCard.client";
+import MovieCard from "@/components/MovieCard";
 
 export default function WatchlistClient() {
-  const { list } = useWatchlist();
+  const { list, isLoading } = useWatchlist();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">
+        Loading watchlist...
+      </div>
+    );
+  }
 
   if (list.length === 0) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-zinc-400">
+      <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">
         Your watchlist is empty 🎬
       </div>
     );
@@ -16,21 +25,22 @@ export default function WatchlistClient() {
 
   return (
     <section className="px-6 py-10">
-      <h1 className="mb-6 text-3xl font-bold text-white">
+      <h1 className="mb-6 text-3xl font-bold text-foreground">
         My Watchlist
       </h1>
 
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {list.map((movie) => (
-          <MovieCard
-            key={movie.id}
-            id={movie.id}                 // ✅ REQUIRED
-            title={movie.title}
-            posterUrl={movie.posterUrl}
-            rating={movie.rating ?? 0}
-            year={movie.releaseYear}
-            genre={[]}                   // (can improve later)
-          />
+          <Link key={movie.id} href={`/movies/${movie.id}`} className="block h-full transition-transform hover:scale-105">
+            <MovieCard
+              id={Number(movie.id)}
+              title={movie.title}
+              image={movie.posterUrl}
+              rating={movie.rating ?? 0}
+              year={movie.releaseYear}
+              genre={[]}
+            />
+          </Link>
         ))}
       </div>
     </section>

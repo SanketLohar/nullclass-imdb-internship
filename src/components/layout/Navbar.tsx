@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Film, Search, Menu, X } from "lucide-react";
+import { Film, Search, Menu, X, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "@/components/theme/ThemeToggle.client";
+import { useAuth } from "@/_wip/auth/auth.context";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const { user, login, logout } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,10 +27,11 @@ export default function Navbar() {
     { label: "Movies", path: "/movies" },
     { label: "Top Rated", path: "/top-rated" },
     { label: "Coming Soon", path: "/coming-soon" },
+    { label: "Actors", path: "/actors" },
   ];
 
   return (
-    <nav className="bg-black/70 backdrop-blur-md border-b border-zinc-800 sticky top-0 z-50">
+    <nav className="bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -35,8 +39,8 @@ export default function Navbar() {
             href="/"
             className="flex items-center gap-2 hover-glow"
           >
-            <Film className="w-8 h-8 text-yellow-500" />
-            <span className="text-xl font-bold text-glow">
+            <Film className="w-8 h-8 text-accent" />
+            <span className="text-xl font-bold text-glow text-foreground">
               MovieDB
             </span>
           </Link>
@@ -47,14 +51,14 @@ export default function Navbar() {
               onSubmit={handleSearch}
               className="relative"
             >
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input
                 value={searchQuery}
                 onChange={(e) =>
                   setSearchQuery(e.target.value)
                 }
                 placeholder="Search movies..."
-                className="bg-zinc-900/80 text-white pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 w-64"
+                className="bg-muted text-foreground pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/50 w-64"
               />
             </form>
 
@@ -63,17 +67,49 @@ export default function Navbar() {
                 <Link
                   key={item.label}
                   href={item.path}
-                  className="text-zinc-300 hover:text-white transition-colors hover-glow"
+                  className="text-muted-foreground hover:text-foreground transition-colors hover-glow"
                 >
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href="/watchlist"
+                className="text-muted-foreground hover:text-foreground transition-colors hover-glow"
+              >
+                Watchlist
+              </Link>
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <User className="w-4 h-4" />
+                    <span className="text-sm">{user.name || user.username}</span>
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-muted/80 rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={login}
+                  className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/80 text-accent-foreground rounded-lg font-semibold transition-colors"
+                  aria-label="Login"
+                >
+                  <User className="w-4 h-4" />
+                  Login
+                </button>
+              )}
+              <ThemeToggle />
             </div>
           </div>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden text-zinc-300"
+            className="md:hidden text-muted-foreground hover:text-foreground"
             onClick={() =>
               setIsMenuOpen((p) => !p)
             }
@@ -88,19 +124,19 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4">
+          <div className="md:hidden py-4 border-t border-border">
             <form
               onSubmit={handleSearch}
               className="relative mb-4"
             >
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-500 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input
                 value={searchQuery}
                 onChange={(e) =>
                   setSearchQuery(e.target.value)
                 }
                 placeholder="Search movies..."
-                className="bg-zinc-900/80 text-white pl-10 pr-4 py-2 rounded-xl w-full"
+                className="bg-muted text-foreground pl-10 pr-4 py-2 rounded-xl w-full"
               />
             </form>
 
@@ -109,7 +145,7 @@ export default function Navbar() {
                 <Link
                   key={item.label}
                   href={item.path}
-                  className="text-zinc-300 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                   onClick={() =>
                     setIsMenuOpen(false)
                   }
@@ -117,6 +153,42 @@ export default function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href="/watchlist"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Watchlist
+              </Link>
+              {user ? (
+                <div className="flex flex-col gap-2 pt-2 border-t border-border">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <User className="w-4 h-4" />
+                    <span>{user.name || user.username}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-muted hover:bg-muted/80 rounded-lg text-muted-foreground hover:text-foreground transition-colors w-full"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    login();
+                    setIsMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/80 text-accent-foreground rounded-lg font-semibold transition-colors w-full"
+                >
+                  <User className="w-4 h-4" />
+                  Login
+                </button>
+              )}
             </div>
           </div>
         )}

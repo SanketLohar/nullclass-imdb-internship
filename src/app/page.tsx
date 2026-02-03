@@ -1,84 +1,46 @@
-"use client";
-
+import { Suspense } from "react";
 import Hero from "@/components/Hero";
 import MovieCarousel from "@/components/MovieCarousel";
-
+import { tmdbService } from "@/lib/tmdb/tmdb.service";
 import { Award, Clock, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
-export default function HomePage() {
-  const trendingMovies = [
-    {
-      id: 1,
-      title: "Dune: Part Two",
-      rating: 8.8,
-      image:
-        "https://images.unsplash.com/photo-1534809027769-b00d750a6bac?auto=format&fit=crop&w=800&q=80",
-      year: 2024,
-      genre: ["Action", "Adventure", "Sci-Fi"],
-    },
-    {
-      id: 2,
-      title: "Poor Things",
-      rating: 8.4,
-      image:
-        "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80",
-      year: 2023,
-      genre: ["Comedy", "Drama", "Romance"],
-    },
-    {
-      id: 3,
-      title: "Oppenheimer",
-      rating: 8.9,
-      image:
-        "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=800&q=80",
-      year: 2023,
-      genre: ["Biography", "Drama", "History"],
-    },
-    {
-      id: 4,
-      title: "The Batman",
-      rating: 8.5,
-      image:
-        "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?auto=format&fit=crop&w=800&q=80",
-      year: 2024,
-      genre: ["Action", "Crime", "Drama"],
-    },
-    {
-      id: 5,
-      title: "Killers of the Flower Moon",
-      rating: 8.7,
-      image:
-        "https://images.unsplash.com/photo-1533928298208-27ff66555d8d?auto=format&fit=crop&w=800&q=80",
-      year: 2023,
-      genre: ["Crime", "Drama", "History"],
-    },
-  ];
+async function getMovies() {
+  const [trending, upcomingMovies, config] = await Promise.all([
+    tmdbService.getPopularMovies(),
+    tmdbService.getComingSoonMovies(),
+    tmdbService.getConfig(),
+  ]);
 
-  const upcomingMovies = [
-    {
-      id: 6,
-      title: "Deadpool 3",
-      rating: 9.1,
-      image:
-        "https://images.unsplash.com/photo-1535016120720-40c646be5580?auto=format&fit=crop&w=800&q=80",
-      year: 2024,
-      genre: ["Action", "Comedy", "Adventure"],
-    },
-    {
-      id: 8,
-      title: "Kingdom of the Planet of the Apes",
-      rating: 8.3,
-      image:
-        "https://images.unsplash.com/photo-1533973860717-d49dfd14cf64?auto=format&fit=crop&w=800&q=80",
-      year: 2024,
-      genre: ["Action", "Adventure", "Drama"],
-    },
-  ];
+  const mapMovie = (movie: any) => ({
+    id: movie.id,
+    title: movie.title,
+    rating: movie.vote_average,
+    image: movie.backdrop_path
+      ? `${config.images.secure_base_url}w1280${movie.backdrop_path}`
+      : `${config.images.secure_base_url}w1280${movie.poster_path}`, // Fallback for components still using 'image'
+    posterUrl: movie.poster_path
+      ? `${config.images.secure_base_url}w780${movie.poster_path}`
+      : `${config.images.secure_base_url}w780${movie.backdrop_path}`,
+    backdropUrl: movie.backdrop_path
+      ? `${config.images.secure_base_url}original${movie.backdrop_path}`
+      : "/placeholder-backdrop.jpg",
+    year: new Date(movie.release_date).getFullYear(),
+    genre: [],
+  });
+
+  return {
+    trendingMovies: trending.results.map(mapMovie),
+    upcomingMovies: upcomingMovies.map(mapMovie),
+  };
+}
+
+export default async function HomePage() {
+  const { trendingMovies, upcomingMovies } = await getMovies();
 
   return (
     <div>
-      <Hero />
+      <Hero movies={trendingMovies.slice(0, 5)} />
 
       <main className="container mx-auto px-4 py-8">
         {/* Quick categories */}
@@ -138,7 +100,9 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <MovieCarousel movies={trendingMovies} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <MovieCarousel movies={trendingMovies} />
+          </Suspense>
         </section>
 
         {/* Coming soon */}
@@ -157,7 +121,9 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <MovieCarousel movies={upcomingMovies} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <MovieCarousel movies={upcomingMovies} />
+          </Suspense>
         </section>
       </main>
     </div>

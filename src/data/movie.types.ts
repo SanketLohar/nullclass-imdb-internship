@@ -38,4 +38,5 @@ export type Movie = {
 
   genres: string[];
   cast: CastMember[];
+  trailer?: string; // Optional trailer URL
 };
