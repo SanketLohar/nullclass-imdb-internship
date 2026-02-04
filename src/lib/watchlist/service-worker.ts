@@ -1,4 +1,19 @@
-// Service worker registration and management
+import { WatchlistMovie } from "@/data/watchlist/watchlist.types";
+import { VectorClock } from "@/data/watchlist/watchlist.conflict";
+import { Review } from "@/data/reviews/review.types";
+
+export interface SyncOperation {
+  type: "ADD" | "REMOVE" | "REVIEW_ADD" | "REVIEW_UPDATE" | "REVIEW_DELETE" | "REVIEW_VOTE";
+  item?: WatchlistMovie | Review;
+  itemId?: string;
+  vectorClock?: VectorClock;
+  deviceId?: string;
+  timestamp?: number;
+  retryCount?: number;
+  // Extra fields for review logic
+  payload?: any;
+}
+
 export async function registerServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
     return null;
@@ -63,13 +78,7 @@ export async function requestBackgroundSync() {
 }
 
 // Queue operation for background sync
-export async function queueOperationForSync(operation: {
-  type: "ADD" | "REMOVE";
-  item?: any;
-  itemId?: string;
-  vectorClock?: any;
-  deviceId?: string;
-}) {
+export async function queueOperationForSync(operation: SyncOperation) {
   if (typeof window === "undefined") {
     return;
   }
@@ -111,7 +120,7 @@ function openSyncQueueDB(): Promise<IDBDatabase> {
 
 function addOperationToQueue(
   db: IDBDatabase,
-  operation: any
+  operation: SyncOperation
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction("operations", "readwrite");

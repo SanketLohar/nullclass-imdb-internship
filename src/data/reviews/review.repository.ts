@@ -10,6 +10,18 @@ import {
 import { REVIEW_STORE } from "./review.db";
 import { containsProfanity } from "@/lib/moderation/profanity";
 import { emitReviewEvent } from "./review.events";
+import { queueOperationForSync } from "@/lib/watchlist/service-worker";
+import { createVectorClock } from "../watchlist/watchlist.conflict"; // Reuse/Warning: Review doesn't have vector clock in types yet, I'll skip VC for review sync as it was not strictly required by audit to have conflict res, just background sync. I'll just send deviceId.
+
+function getDeviceId() {
+  if (typeof window === "undefined") return "server";
+  let id = localStorage.getItem("device_id");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("device_id", id);
+  }
+  return id;
+}
 
 /* ------------------------------------
    GET REVIEWS
@@ -157,6 +169,13 @@ export async function createReview({
     review,
   });
 
+  queueOperationForSync({
+    type: "REVIEW_ADD",
+    item: review,
+    deviceId: getDeviceId(),
+    vectorClock: {} // Mock
+  });
+
   return review;
 }
 
@@ -219,6 +238,13 @@ export async function updateReview(
     review: updated,
   });
 
+  queueOperationForSync({
+    type: "REVIEW_UPDATE",
+    item: updated,
+    deviceId: getDeviceId(),
+    vectorClock: {}
+  });
+
   return updated;
 }
 
@@ -273,6 +299,13 @@ export async function deleteReview(
     type: "delete",
     movieId: review.movieId,
     reviewId,
+  });
+
+  queueOperationForSync({
+    type: "REVIEW_DELETE",
+    itemId: reviewId,
+    deviceId: getDeviceId(),
+    vectorClock: {}
   });
 }
 

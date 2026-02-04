@@ -67,28 +67,41 @@ async function syncWatchlist() {
 }
 
 // Process a single operation
+// Process a single operation
 async function processOperation(op) {
-  const { type, item, itemId, vectorClock, deviceId } = op;
+  const { type, item, itemId, vectorClock, deviceId, payload } = op;
 
   if (type === "ADD") {
-    const response = await fetch("/api/watchlist/mock", {
+    await fetch("/api/watchlist/mock", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...item, vectorClock, deviceId }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Add failed: ${response.statusText}`);
-    }
-  } else if (type === "REMOVE") {
-    const response = await fetch(`/api/watchlist/mock?id=${itemId}`, {
+    }).then(r => { if (!r.ok) throw new Error(r.statusText); });
+  }
+  else if (type === "REMOVE") {
+    await fetch(`/api/watchlist/mock?id=${itemId}`, {
       method: "DELETE",
       headers: { "X-Vector-Clock": JSON.stringify(vectorClock) },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Remove failed: ${response.statusText}`);
-    }
+    }).then(r => { if (!r.ok) throw new Error(r.statusText); });
+  }
+  else if (type === "REVIEW_ADD") {
+    await fetch("/api/reviews/mock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ review: item, deviceId }),
+    }).then(r => { if (!r.ok) throw new Error(r.statusText); });
+  }
+  else if (type === "REVIEW_UPDATE") {
+    await fetch("/api/reviews/mock", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ review: item, deviceId }),
+    }).then(r => { if (!r.ok) throw new Error(r.statusText); });
+  }
+  else if (type === "REVIEW_DELETE") {
+    await fetch(`/api/reviews/mock?id=${itemId}`, {
+      method: "DELETE",
+    }).then(r => { if (!r.ok) throw new Error(r.statusText); });
   }
 }
 

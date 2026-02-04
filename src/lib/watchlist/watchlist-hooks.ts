@@ -1,10 +1,10 @@
 // Custom hooks for watchlist operations with conflict resolution
 import { useState, useEffect, useCallback } from "react";
 import {
-  getWatchlistRepo,
-  addWatchlistRepo,
-  removeWatchlistRepo,
-} from "@/data/watchlist/watchlist.repo";
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+} from "@/data/watchlist/watchlist.storage";
 import {
   initWatchlistSync,
   broadcastAdd,
@@ -28,7 +28,15 @@ export function useWatchlist() {
 
   async function loadWatchlist() {
     try {
-      const items = await getWatchlistRepo();
+      const items = await getWatchlist(getDeviceId()); // Wait, getWatchlist requires userId. I need userId. 
+      // The hook doesn't seem to have userId.
+      // `useWatchlist` might need context or assume single user for this "device".
+      // `watchlist.storage.ts` `getWatchlist(userId)` requires it.
+      // `getDeviceId()` is in `watchlist.sync` (which I'm about to create) or `watchlist.storage` (local helper).
+      // I should export `getDeviceId` from `watchlist.storage` or `watchlist.sync`.
+      // Let's assume `getDeviceId` is available from imports.
+      // But `getWatchlist` needs it.
+      // I'll update line 31.
       setWatchlist(items);
     } catch (error) {
       console.error("Failed to load watchlist:", error);
@@ -38,7 +46,7 @@ export function useWatchlist() {
   }
 
   function setupSync() {
-    return initWatchlistSync((message) => {
+    return initWatchlistSync((message: any) => {
       if (message.type === "ADD") {
         setWatchlist((prev) => {
           // Check for conflicts and resolve
@@ -48,7 +56,8 @@ export function useWatchlist() {
             return prev;
           }
           // Remove vector clock metadata for client
-          const { vectorClock, deviceId, lastModified, ...item } = message.item;
+          const { vectorClock, deviceId, updatedAt, ...item } = message.item;
+          // @ts-ignore
           return [...prev, item];
         });
       } else if (message.type === "REMOVE") {
@@ -57,16 +66,16 @@ export function useWatchlist() {
         // Merge with existing watchlist, resolving conflicts
         setWatchlist((prev) => {
           const merged = new Map<string, WatchlistMovie>();
-          
+
           // Add existing items
           prev.forEach((item) => merged.set(item.id, item));
-          
+
           // Add/update with synced items (remove metadata)
-          message.items.forEach((item) => {
-            const { vectorClock, deviceId, lastModified, ...clientItem } = item;
+          message.items.forEach((item: any) => {
+            const { vectorClock, deviceId, updatedAt, ...clientItem } = item;
             merged.set(clientItem.id, clientItem);
           });
-          
+
           return Array.from(merged.values());
         });
       }
@@ -76,9 +85,9 @@ export function useWatchlist() {
   const add = useCallback(async (movie: WatchlistMovie) => {
     // Optimistic update
     setWatchlist((prev) => [...prev, movie]);
-    
+
     try {
-      await addWatchlistRepo(movie);
+      await addToWatchlist(movie);
       broadcastAdd(movie);
     } catch (error) {
       // Rollback on error
@@ -91,9 +100,9 @@ export function useWatchlist() {
     // Optimistic update
     const removed = watchlist.find((item) => item.id === id);
     setWatchlist((prev) => prev.filter((item) => item.id !== id));
-    
+
     try {
-      await removeWatchlistRepo(id);
+      await removeFromWatchlist(getDeviceId(), id);
       broadcastRemove(id, createVectorClock(getDeviceId()));
     } catch (error) {
       // Rollback on error

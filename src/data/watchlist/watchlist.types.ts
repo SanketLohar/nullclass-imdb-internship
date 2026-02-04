@@ -6,6 +6,10 @@ export type WatchlistMovie = {
   releaseYear: number;
   rating?: number;
   addedAt: number;
+  // Sync fields
+  vectorClock?: Record<string, number>;
+  deviceId?: string;
+  updatedAt?: number;
 };
 
 /**
