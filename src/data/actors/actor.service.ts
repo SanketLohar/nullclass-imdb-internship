@@ -5,7 +5,7 @@ import { tmdbService } from "@/lib/tmdb/tmdb.service";
 
 export const runtime = "edge";
 
-export async function getActorById(id: number, options?: { strict?: boolean }): Promise<Actor | null> {
+export async function getActorById(id: number, options?: { strict?: boolean; skipAwards?: boolean }): Promise<Actor | null> {
   try {
     const [details, credits] = await Promise.all([
       tmdbService.getActorDetails(id),
@@ -49,14 +49,19 @@ export async function getActorById(id: number, options?: { strict?: boolean }): 
       .sort((a: FilmographyItem, b: FilmographyItem) => b.year - a.year);
 
     // Process awards (Background fetch OMDb)
-    const topMovies = [...filmography]
-      .sort((a: any, b: any) => b.vote_count - a.vote_count)
-      .slice(0, 8);
+    let awards: ActorAward[] = [];
 
-    const awards = await fetchActorAwards(topMovies);
+    // Optimization: Skip expensive OMDb calls for list views
+    if (!options?.skipAwards) {
+      const topMovies = [...filmography]
+        .sort((a: any, b: any) => b.vote_count - a.vote_count)
+        .slice(0, 8);
 
-    // Final Strict Check: Must have awards
-    if (options?.strict && awards.length === 0) {
+      awards = await fetchActorAwards(topMovies);
+    }
+
+    // Final Strict Check: Must have awards (Only if we checked for them)
+    if (options?.strict && !options?.skipAwards && awards.length === 0) {
       // console.log(`[Skipped] ${details.name} (ID: ${id}) - No Awards`);
       return null;
     }

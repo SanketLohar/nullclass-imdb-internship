@@ -44,7 +44,8 @@ export default async function ActorsPage() {
 
                         try {
                             // Strict Mode: Service handles Bio/IMDb/Awards validation internally
-                            const detailedActor = await getActorById(candidate.id, { strict: true });
+                            // Optimization: Skip awards check for list view to avoid OMDb rate limits
+                            const detailedActor = await getActorById(candidate.id, { strict: true, skipAwards: true });
 
                             if (detailedActor) {
                                 return {
