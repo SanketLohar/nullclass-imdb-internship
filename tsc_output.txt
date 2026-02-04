@@ -1,0 +1,3 @@
+﻿src/app/movies/[id]/test/page.tsx(3,28): error TS2307: Cannot find module '@/_wip/review.context' or its corresponding type declarations.
+src/data/actors.ts(27,7): error TS2739: Type '{ name: string; year: number; film: string; }' is missing the following properties from type 'ActorAward': category, isWinner
+src/data/actors.ts(32,7): error TS2739: Type '{ name: string; year: number; film: string; }' is missing the following properties from type 'ActorAward': category, isWinner

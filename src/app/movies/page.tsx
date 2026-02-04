@@ -4,7 +4,7 @@ import { SlidersHorizontal, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { tmdbService } from "@/lib/tmdb/tmdb.service";
 import MovieCard from "@/components/MovieCard";
 
@@ -17,7 +17,7 @@ type Movie = {
   genre: string[];
 };
 
-export default function MoviesPage() {
+function MoviesContent() {
   const searchParams = useSearchParams();
   const search = searchParams.get("search");
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -127,5 +127,19 @@ export default function MoviesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MoviesPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-zinc-400">Loading movies...</p>
+        </div>
+      </div>
+    }>
+      <MoviesContent />
+    </Suspense>
   );
 }

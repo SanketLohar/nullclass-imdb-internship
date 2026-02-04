@@ -7,15 +7,22 @@ import {
   useState,
 } from "react";
 
-import type { Review, ReviewInput } from "@/_wip/review/review.types";
+import type { Review } from "@/data/reviews/review.types";
+import { reviewSchema } from "@/data/reviews/review.schema";
+type ReviewInput = {
+  movieId: number;
+  author: { id: string; username: string };
+  rating: number;
+  content: string;
+};
 
 import {
   createReview,
   deleteReview,
-  fetchMovieReviews,
-  restoreReview as restoreFromRepo,
+  getReviewsByMovie,
+  undoDeleteReview as restoreFromRepo,
   updateReview as updateFromRepo,
-} from "@/_wip/review/review.repository";
+} from "@/data/reviews/review.repository";
 
 type ReviewContextType = {
   reviews: Review[];
@@ -42,14 +49,19 @@ export function ReviewProvider({
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
-    fetchMovieReviews(movieId).then(setReviews);
+    // Convert string movieId to number for the repo
+    const mId = Number(movieId);
+    if (isNaN(mId)) return;
 
-    // Cross-Tab Sync via Robust Broadcast System
+    // Use getReviewsByMovie from imports (which aliases real repo)
+    // We already imported getReviewsByMovie as part of the module
+    getReviewsByMovie(mId).then(setReviews);
+
+    // Cross-Tab Sync
     import("@/data/reviews/review.sync").then(({ subscribeToReviewSync }) => {
       const cleanup = subscribeToReviewSync((event) => {
         setReviews((prev) => {
-          // 1. FILTER: Ignore events for other movies
-          // Handle both string and number movieId safely
+          // 1. FILTER
           const eventMovieId =
             event.type === "REVIEW_DELETE"
               ? String(event.payload.movieId)
@@ -58,21 +70,23 @@ export function ReviewProvider({
           if (eventMovieId !== movieId) return prev;
 
           // 2. MERGE
+          /* The sync event payload is typed as ReviewSyncEvent in sync.ts which has specific payload shapes.
+             REVIEW_ADD -> payload: Review
+             REVIEW_UPDATE -> payload: Review
+             REVIEW_RESTORE -> payload: Review
+             REVIEW_DELETE -> payload: { reviewId, movieId }
+          */
+
           if (event.type === "REVIEW_ADD") {
-            const newReview = event.payload as unknown as Review; // Cast to WIP Review type
-            // Prevent duplicates
+            const newReview = event.payload as Review;
             if (prev.some((r) => r.id === newReview.id)) return prev;
             return [newReview, ...prev];
           }
 
           if (event.type === "REVIEW_UPDATE" || event.type === "REVIEW_RESTORE") {
-            const updatedReview = event.payload as unknown as Review; // Cast to WIP Review type
-            // If it's a restore, we might need to add it if it's not in the list (if we filtered deleted ones out)
-            // But if we are keeping deleted ones with deletedAt in the list, then it's just an update.
-            // Check if it exists
+            const updatedReview = event.payload as Review;
             const exists = prev.some((r) => r.id === updatedReview.id);
             if (!exists) {
-              // If it's a restore and we don't have it, prepend it?
               return [updatedReview, ...prev];
             }
             return prev.map((r) =>
@@ -81,10 +95,10 @@ export function ReviewProvider({
           }
 
           if (event.type === "REVIEW_DELETE") {
-            // Mark as deleted (optimistic update style for consistency)
+            // payload has reviewId
             return prev.map((r) =>
               r.id === event.payload.reviewId
-                ? { ...r, deletedAt: Date.now() } // We don't have exact deletedAt from event payload here easily unless we pass simpler payload, but Date.now() is fine for UI
+                ? { ...r, deletedAt: Date.now() }
                 : r
             );
           }
@@ -96,6 +110,9 @@ export function ReviewProvider({
     });
   }, [movieId]);
 
+  // Helper to get userId - requires user to be logged in for actions
+  // The context consumers should handle auth checks usually, but repo requires userId.
+
   function hasUserReviewed(userId: string) {
     return reviews.some(
       (r) =>
@@ -105,7 +122,12 @@ export function ReviewProvider({
   }
 
   async function addReview(input: ReviewInput) {
-    const review = await createReview(input);
+    const review = await createReview({
+      movieId: input.movieId,
+      author: input.author,
+      rating: input.rating,
+      content: input.content
+    });
     setReviews((prev) => [review, ...prev]);
   }
 
@@ -114,20 +136,25 @@ export function ReviewProvider({
     rating: number,
     content: string
   ) {
-    const updated = await updateFromRepo(reviewId, {
-      rating,
-      content,
-    });
+    // Need userId. Find existing review to get author.id
+    const existing = reviews.find(r => r.id === reviewId);
+    if (!existing) return;
 
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === reviewId ? updated : r
-      )
-    );
+    const updated = await updateFromRepo(reviewId, content, existing.author.id);
+    if (updated) {
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === reviewId ? updated : r
+        )
+      );
+    }
   }
 
   async function removeReview(reviewId: string) {
-    await deleteReview(reviewId);
+    const existing = reviews.find(r => r.id === reviewId);
+    if (!existing) return;
+
+    await deleteReview(reviewId, existing.author.id);
 
     setReviews((prev) =>
       prev.map((review) =>

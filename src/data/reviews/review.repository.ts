@@ -176,8 +176,10 @@ export async function createReview({
     vectorClock: {} // Mock
   });
 
-  const { broadcastReviewAdd } = await import("./review.sync");
-  broadcastReviewAdd(review);
+  if (typeof window !== "undefined") {
+    const { broadcastReviewAdd } = await import("./review.sync");
+    broadcastReviewAdd(review);
+  }
 
   return review;
 }
@@ -248,8 +250,10 @@ export async function updateReview(
     vectorClock: {}
   });
 
-  const { broadcastReviewUpdate } = await import("./review.sync");
-  broadcastReviewUpdate(updated);
+  if (typeof window !== "undefined") {
+    const { broadcastReviewUpdate } = await import("./review.sync");
+    broadcastReviewUpdate(updated);
+  }
 
   return updated;
 }
@@ -277,8 +281,10 @@ export async function undoDeleteReview(
     review,
   });
 
-  const { broadcastReviewRestore } = await import("./review.sync");
-  broadcastReviewRestore(review);
+  if (typeof window !== "undefined") {
+    const { broadcastReviewRestore } = await import("./review.sync");
+    broadcastReviewRestore(review);
+  }
 }
 
 /* ------------------------------------
@@ -317,8 +323,10 @@ export async function deleteReview(
     vectorClock: {}
   });
 
-  const { broadcastReviewDelete } = await import("./review.sync");
-  broadcastReviewDelete(reviewId, review.movieId);
+  if (typeof window !== "undefined") {
+    const { broadcastReviewDelete } = await import("./review.sync");
+    broadcastReviewDelete(reviewId, review.movieId);
+  }
 }
 
 
@@ -378,8 +386,10 @@ export async function voteReview(
     review,
   });
 
-  const { broadcastReviewUpdate } = await import("./review.sync");
-  broadcastReviewUpdate(review);
+  if (typeof window !== "undefined") {
+    const { broadcastReviewUpdate } = await import("./review.sync");
+    broadcastReviewUpdate(review);
+  }
 
   return review;
 }

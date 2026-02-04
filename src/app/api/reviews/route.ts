@@ -9,7 +9,7 @@ import {
 } from "@/data/reviews/review.idempotency";
 import { createReview } from "@/data/reviews/review.repository";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   try {

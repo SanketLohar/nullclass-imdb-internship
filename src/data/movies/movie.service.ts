@@ -10,13 +10,13 @@ export async function getMovieById(
   id: string | number
 ): Promise<Movie | null> {
   const movieId = typeof id === "string" ? Number(id) : id;
-  
+
   // Try TMDb first if API key is available
   if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
     try {
       const tmdbMovie = await tmdbService.getMovieDetails(movieId);
       const config = await tmdbService.getConfig();
-      
+
       // Try to get trailer
       let trailer: string | undefined;
       try {
@@ -28,29 +28,30 @@ export async function getMovieById(
       } catch {
         // Fallback to mock trailers
       }
-      
+
       return {
         id: tmdbMovie.id,
         title: tmdbMovie.title,
         overview: tmdbMovie.overview,
         releaseYear: new Date(tmdbMovie.release_date).getFullYear(),
         rating: tmdbMovie.vote_average,
-        posterUrl: tmdbMovie.poster_path 
+        posterUrl: tmdbMovie.poster_path
           ? `${config.images.secure_base_url}w500${tmdbMovie.poster_path}`
           : "/placeholder-movie.jpg",
         backdropUrl: tmdbMovie.backdrop_path
           ? `${config.images.secure_base_url}w1280${tmdbMovie.backdrop_path}`
           : "/placeholder-backdrop.jpg",
-        runtime: 0, // TMDb doesn't provide runtime in basic details
+        runtime: tmdbMovie.runtime || 0,
         trailer,
         cast: [], // Will be fetched separately
+        genres: tmdbMovie.genres?.map(g => g.name) || [],
       };
     } catch (error) {
       console.error("TMDb fetch failed, using mock data:", error);
       // Fall through to mock data
     }
   }
-  
+
   // Fallback to mock data
   const movie = MOVIES.find((m) => m.id === movieId);
   if (!movie) return null;

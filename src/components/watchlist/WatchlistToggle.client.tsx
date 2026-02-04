@@ -1,8 +1,8 @@
 "use client";
 
 import { Bookmark, Check } from "lucide-react";
-import { useWatchlist } from "@/_wip/watchlist.context";
-import { useAuth } from "@/_wip/auth/auth.context";
+import { useWatchlist } from "@/context/watchlist.context";
+import { useAuth } from "@/context/auth/auth.context";
 import { useRouter } from "next/navigation";
 
 interface Props {

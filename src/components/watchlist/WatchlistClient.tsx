@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useWatchlist } from "@/_wip/watchlist.context";
+import { useWatchlist } from "@/context/watchlist.context";
 import MovieCard from "@/components/MovieCard";
 
 export default function WatchlistClient() {

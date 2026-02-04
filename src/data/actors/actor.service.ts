@@ -2,10 +2,20 @@
 import { Actor, FilmographyItem, ActorAward } from "../actors.types";
 import { getMovieAwards } from "@/lib/omdb/omdb.service";
 import { tmdbService } from "@/lib/tmdb/tmdb.service";
+import { revalidateTag } from "next/cache";
 
-export const runtime = "edge";
+export function getRevalidationTag(actorId: number): string {
+  return `actor-${actorId}`;
+}
 
-export async function getActorById(id: number, options?: { strict?: boolean; skipAwards?: boolean }): Promise<Actor | null> {
+export async function revalidateActor(actorId: number) {
+  const tag = getRevalidationTag(actorId);
+  // @ts-ignore
+  revalidateTag(tag);
+  console.log(`[Revalidate] Tag: ${tag}`);
+}
+
+export async function getActorById(id: number, options?: { strict?: boolean; skipAwards?: boolean; revalidate?: boolean }): Promise<Actor | null> {
   try {
     const [details, credits] = await Promise.all([
       tmdbService.getActorDetails(id),
@@ -27,7 +37,12 @@ export async function getActorById(id: number, options?: { strict?: boolean; ski
 
     // Process filmography
     const cast = credits?.cast || [];
-    const filmography: FilmographyItem[] = cast
+    // Deduplicate by ID immediately
+    const uniqueCast = cast.filter((m: any, index: number, self: any[]) =>
+      index === self.findIndex((t) => t.id === m.id)
+    );
+
+    const filmography: FilmographyItem[] = uniqueCast
       .filter((m: any) =>
         m.id &&
         m.poster_path &&
@@ -184,7 +199,22 @@ async function fetchActorAwards(movies: FilmographyItem[]): Promise<ActorAward[]
   return awardsList.sort((a, b) => b.year - a.year);
 }
 
-export async function getActorFilmography(actorId: number): Promise<FilmographyItem[]> {
+export async function getActorFilmography(
+  actorId: number,
+  filters?: { year?: number; role?: string }
+): Promise<FilmographyItem[]> {
   const actor = await getActorById(actorId);
-  return actor?.filmography || [];
+  let filmography = actor?.filmography || [];
+
+  if (filters) {
+    if (filters.year) {
+      filmography = filmography.filter((f) => f.year === filters.year);
+    }
+    if (filters.role) {
+      const roleFilter = filters.role.toLowerCase();
+      filmography = filmography.filter((f) => f.role.toLowerCase().includes(roleFilter));
+    }
+  }
+
+  return filmography;
 }

@@ -3,8 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import { WatchlistProvider } from "@/_wip/watchlist.context";
-import { AuthProvider } from "@/_wip/auth/auth.context";
+import { WatchlistProvider } from "@/context/watchlist.context";
+import { AuthProvider } from "@/context/auth/auth.context";
 
 export function Providers({
   children,

@@ -1,4 +1,4 @@
-import { WatchlistItem } from "@/data/watchlist/watchlist.types";
+import { WatchlistMovie } from "@/data/watchlist/watchlist.types";
 import { VectorClock } from "./vector-clock";
 
 /**
@@ -9,11 +9,11 @@ import { VectorClock } from "./vector-clock";
  * @param remoteClock Vector clock for the remote state
  */
 export function resolveConflict(
-    local: WatchlistItem | undefined,
-    remote: WatchlistItem | undefined,
+    local: WatchlistMovie | undefined,
+    remote: WatchlistMovie | undefined,
     localClock: VectorClock,
     remoteClock: VectorClock
-): { resolved: WatchlistItem | undefined; action: "keep_local" | "update_from_remote" | "delete" } {
+): { resolved: WatchlistMovie | undefined; action: "keep_local" | "update_from_remote" | "delete" } {
     // If clocks are identical, they are in sync
     if (localClock.serialize() === remoteClock.serialize()) {
         return { resolved: local, action: "keep_local" };

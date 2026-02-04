@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useReviews } from "@/_wip/review.context";
+import { useReviews } from "@/context/review.context";
 
 type Props = {
   reviewId: string;

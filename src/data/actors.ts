@@ -28,11 +28,15 @@ export const ACTORS: Actor[] = [
         name: "Academy Award Nomination",
         year: 2018,
         film: "Call Me by Your Name",
+        category: "Best Actor",
+        isWinner: false,
       },
       {
         name: "Golden Globe Nomination",
         year: 2018,
         film: "Call Me by Your Name",
+        category: "Best Actor",
+        isWinner: false,
       },
     ],
 

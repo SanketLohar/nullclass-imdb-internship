@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useReviews } from "@/_wip/review.context";
+import { useReviews } from "@/context/review.context";
 import ReviewItem from "./ReviewItem";
 import UndoToast from "./UndoToast.client";
 

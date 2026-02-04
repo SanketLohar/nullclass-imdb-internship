@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkAPIPolicy } from "@/lib/security/api-policy";
 import { getLocaleFromHeaders, getActorName, getActorBiography } from "@/lib/i18n/actor-i18n";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 // ISR with on-demand revalidation

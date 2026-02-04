@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useAuth } from "@/_wip/auth/auth.context";
+import { useAuth } from "@/context/auth/auth.context";
 
 import type {
   WatchlistMovie,

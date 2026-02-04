@@ -2,7 +2,7 @@
 import { revalidateActor } from "@/data/actors/actor.service";
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 export async function POST(
   request: NextRequest,

@@ -32,7 +32,7 @@ import ReviewSortTabs, {
 
 import { sortReviews } from "@/data/reviews/review.sort";
 import type { Review } from "@/data/reviews/review.types";
-import { useAuth } from "@/_wip/auth/auth.context";
+import { useAuth } from "@/context/auth/auth.context";
 
 export default function ReviewsClient({
   movieId,

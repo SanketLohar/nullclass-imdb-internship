@@ -5,7 +5,7 @@ import { Film, Search, Menu, X, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/theme/ThemeToggle.client";
-import { useAuth } from "@/_wip/auth/auth.context";
+import { useAuth } from "@/context/auth/auth.context";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -1,0 +1,1 @@
+﻿.next/types/validator.ts(197,39): error TS2307: Cannot find module '../../src/app/movies/[id]/test/page.js' or its corresponding type declarations.

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { nanoid } from "nanoid";
 import Link from "next/link";
-import { useAuth } from "@/_wip/auth/auth.context";
+import { useAuth } from "@/context/auth/auth.context";
 import StarRatingInput from "./StarRatingInput";
 import { reviewSchema } from "@/data/reviews/review.schema";
 import type { ReviewInput } from "@/data/reviews/review.schema";

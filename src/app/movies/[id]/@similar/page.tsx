@@ -12,7 +12,7 @@ export default async function SimilarMoviesPage({
   const movieId = Number(id);
 
   const movie = await getMovieById(movieId);
-  
+
   if (!movie) {
     return (
       <section>
@@ -22,8 +22,8 @@ export default async function SimilarMoviesPage({
   }
 
   // Fetch similar movies from TMDb
-  let similarMovies = [];
-  
+  let similarMovies: { id: number; title: string; posterUrl: string; rating: number }[] = [];
+
   try {
     similarMovies = await getSimilarMovies(movieId);
   } catch (error) {

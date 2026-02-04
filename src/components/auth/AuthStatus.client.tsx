@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/_wip/auth/auth.context";
+import { useAuth } from "@/context/auth/auth.context";
 
 export default function AuthStatus() {
   const { user, login, logout } = useAuth();

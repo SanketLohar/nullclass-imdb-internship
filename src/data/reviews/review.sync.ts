@@ -13,9 +13,19 @@ export type ReviewSyncEvent =
     | { type: "REVIEW_DELETE"; payload: { reviewId: string; movieId: string | number }; sourceTabId: string; timestamp: number }
     | { type: "REVIEW_RESTORE"; payload: Review; sourceTabId: string; timestamp: number };
 
+function getBroadcastChannel() {
+    if (typeof window === "undefined" || typeof (globalThis as any).BroadcastChannel === "undefined") {
+        return null;
+    }
+    return new (globalThis as any).BroadcastChannel(CHANNEL_NAME);
+}
+
 function postEvent(ids: { type: ReviewSyncEvent["type"]; payload: any }) {
     if (typeof window === "undefined") return;
-    const channel = new BroadcastChannel(CHANNEL_NAME);
+
+    const channel = getBroadcastChannel();
+    if (!channel) return;
+
     channel.postMessage({
         ...ids,
         sourceTabId: TAB_ID,
@@ -45,7 +55,8 @@ export function subscribeToReviewSync(
 ) {
     if (typeof window === "undefined") return () => { };
 
-    const channel = new BroadcastChannel(CHANNEL_NAME);
+    const channel = getBroadcastChannel();
+    if (!channel) return () => { };
 
     const handler = (msg: MessageEvent<ReviewSyncEvent>) => {
         const event = msg.data;
