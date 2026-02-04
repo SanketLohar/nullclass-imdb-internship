@@ -13,7 +13,7 @@ import UndoToast from "@/components/reviews/UndoToast.client";
 import ReviewEditBadge from "@/components/reviews/ReviewEditBadge.client";
 import ReviewHistory from "@/components/reviews/ReviewHistory.client";
 import ReviewItem from "@/components/movies/reviews/ReviewItem";
-import { useReviewLiveUpdates } from "@/hooks/useReviewLiveUpdates";
+// import { useReviewLiveUpdates } from "@/hooks/useReviewLiveUpdates";
 
 import { useReviewBackgroundSync } from "@/hooks/useReviewBackgroundSync";
 
@@ -271,30 +271,55 @@ export default function ReviewsClient({
       flagReview(review.id, "User reported");
     });
   }
-  useReviewLiveUpdates({
-    movieId,
-    onCreate: (review) => {
-      setReviews((prev) => {
-        if (prev.some((r) => r.id === review.id))
+  /* ----------------------------------
+     Cross-Tab Sync
+  ---------------------------------- */
+  useEffect(() => {
+    // Import dynamically to avoid SSR issues with BroadcastChannel if not handled by the hook internals
+    // (Hook handles window check but dynamic import is safer for code splitting)
+    import("@/data/reviews/review.sync").then(({ subscribeToReviewSync }) => {
+      const cleanup = subscribeToReviewSync((event) => {
+        // 1. FILTER: Ignore events for other movies
+        const eventMovieId =
+          event.type === "REVIEW_DELETE"
+            ? String(event.payload.movieId)
+            : String(event.payload.movieId);
+
+        if (eventMovieId !== String(movieId)) return;
+
+        setReviews((prev) => {
+          // 2. MERGE
+          if (event.type === "REVIEW_ADD") {
+            const newReview = event.payload as unknown as Review;
+            // Prevent duplicates
+            if (prev.some((r) => r.id === newReview.id)) return prev;
+            return [newReview, ...prev];
+          }
+
+          if (event.type === "REVIEW_UPDATE" || event.type === "REVIEW_RESTORE") {
+            const updatedReview = event.payload as unknown as Review;
+            // Check if it exists
+            const exists = prev.some((r) => r.id === updatedReview.id);
+            if (!exists) {
+              // If it's a restore or update and we don't have it, add it
+              return [updatedReview, ...prev];
+            }
+            return prev.map((r) =>
+              r.id === updatedReview.id ? updatedReview : r
+            );
+          }
+
+          if (event.type === "REVIEW_DELETE") {
+            // Remove from list
+            return prev.filter((r) => r.id !== event.payload.reviewId);
+          }
+
           return prev;
-        return [review, ...prev];
+        });
       });
-    },
-
-    onUpdate: (review) => {
-      setReviews((prev) =>
-        prev.map((r) =>
-          r.id === review.id ? review : r
-        )
-      );
-    },
-
-    onDelete: (id) => {
-      setReviews((prev) =>
-        prev.filter((r) => r.id !== id)
-      );
-    },
-  });
+      return cleanup;
+    });
+  }, [movieId]);
 
 
   return (

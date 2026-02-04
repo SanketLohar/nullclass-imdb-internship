@@ -1,38 +1,63 @@
 import { Review } from "./review.types";
 
-const CHANNEL_NAME = "review_sync";
+const CHANNEL_NAME = "reviews-sync";
 
-export type ReviewSyncMessage =
-    | { type: "ADD"; review: Review }
-    | { type: "UPDATE"; review: Review }
-    | { type: "DELETE"; reviewId: string; movieId: number };
+// Generate a unique ID for the current tab/session to prevent echo
+const TAB_ID = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-export function initReviewSync(onMessage: (msg: ReviewSyncMessage) => void) {
+export type ReviewSyncEvent =
+    | { type: "REVIEW_ADD"; payload: Review; sourceTabId: string; timestamp: number }
+    | { type: "REVIEW_UPDATE"; payload: Review; sourceTabId: string; timestamp: number }
+    | { type: "REVIEW_DELETE"; payload: { reviewId: string; movieId: string | number }; sourceTabId: string; timestamp: number }
+    | { type: "REVIEW_RESTORE"; payload: Review; sourceTabId: string; timestamp: number };
+
+function postEvent(ids: { type: ReviewSyncEvent["type"]; payload: any }) {
+    if (typeof window === "undefined") return;
+    const channel = new BroadcastChannel(CHANNEL_NAME);
+    channel.postMessage({
+        ...ids,
+        sourceTabId: TAB_ID,
+        timestamp: Date.now(),
+    });
+    channel.close();
+}
+
+export function broadcastReviewAdd(review: Review) {
+    postEvent({ type: "REVIEW_ADD", payload: review });
+}
+
+export function broadcastReviewUpdate(review: Review) {
+    postEvent({ type: "REVIEW_UPDATE", payload: review });
+}
+
+export function broadcastReviewDelete(reviewId: string, movieId: string | number) {
+    postEvent({ type: "REVIEW_DELETE", payload: { reviewId, movieId } });
+}
+
+export function broadcastReviewRestore(review: Review) {
+    postEvent({ type: "REVIEW_RESTORE", payload: review });
+}
+
+export function subscribeToReviewSync(
+    onEvent: (event: ReviewSyncEvent) => void
+) {
     if (typeof window === "undefined") return () => { };
 
     const channel = new BroadcastChannel(CHANNEL_NAME);
 
-    channel.onmessage = (event) => {
-        onMessage(event.data);
+    const handler = (msg: MessageEvent<ReviewSyncEvent>) => {
+        const event = msg.data;
+        // Ignore events from this same tab
+        if (event.sourceTabId === TAB_ID) return;
+        onEvent(event);
     };
 
-    return () => channel.close();
-}
+    channel.addEventListener("message", handler);
 
-export function broadcastReviewAdd(review: Review) {
-    const channel = new BroadcastChannel(CHANNEL_NAME);
-    channel.postMessage({ type: "ADD", review });
-    channel.close();
-}
-
-export function broadcastReviewUpdate(review: Review) {
-    const channel = new BroadcastChannel(CHANNEL_NAME);
-    channel.postMessage({ type: "UPDATE", review });
-    channel.close();
-}
-
-export function broadcastReviewDelete(reviewId: string, movieId: number) {
-    const channel = new BroadcastChannel(CHANNEL_NAME);
-    channel.postMessage({ type: "DELETE", reviewId, movieId });
-    channel.close();
+    return () => {
+        channel.removeEventListener("message", handler);
+        channel.close();
+    };
 }

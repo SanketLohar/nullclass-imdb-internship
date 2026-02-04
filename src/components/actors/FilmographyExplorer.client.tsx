@@ -3,10 +3,6 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { FilmographyItem } from "@/data/actors.types";
-// @ts-ignore
-import { FixedSizeGrid } from "react-window";
-// @ts-ignore
-import { AutoSizer } from "react-virtualized-auto-sizer";
 import { motion } from "framer-motion";
 
 interface FilmographyExplorerProps {
@@ -127,52 +123,17 @@ export default function FilmographyExplorer({
         </div>
       </div>
 
-      <div className="h-[800px] w-full bg-zinc-900/20 rounded-xl border border-white/5 overflow-hidden">
-        {filtered.length === 0 ? (
-          <div className="text-center py-12 text-zinc-500">
-            No films found matching your filters.
-          </div>
-        ) : (
-          // @ts-ignore
-          <AutoSizer>
-            {({ height, width }: { height: number; width: number }) => {
-              // Responsive columns
-              let columnCount = 2;
-              if (width >= 640) columnCount = 3;
-              if (width >= 1024) columnCount = 4;
-              if (width >= 1280) columnCount = 5;
-
-              const columnWidth = width / columnCount;
-              const rowHeight = columnWidth * 1.5 + 80; // Aspect ratio + padding/text
-              const rowCount = Math.ceil(filtered.length / columnCount);
-
-              return (
-                <FixedSizeGrid
-                  columnCount={columnCount}
-                  columnWidth={columnWidth}
-                  height={height}
-                  rowCount={rowCount}
-                  rowHeight={rowHeight}
-                  width={width}
-                  className="no-scrollbar"
-                >
-                  {({ columnIndex, rowIndex, style }: { columnIndex: number; rowIndex: number; style: any }) => {
-                    const index = rowIndex * columnCount + columnIndex;
-                    if (index >= filtered.length) return null;
-                    const item = filtered[index];
-
-                    return (
-                      <div style={{ ...style, padding: 10 }}>
-                        <FilmographyCard item={item} />
-                      </div>
-                    );
-                  }}
-                </FixedSizeGrid>
-              );
-            }}
-          </AutoSizer>
-        )}
-      </div>
+      {filtered.length === 0 ? (
+        <div className="text-center py-12 text-zinc-500 bg-zinc-900/20 rounded-xl border border-white/5">
+          No films found matching your filters.
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {filtered.map((item) => (
+            <FilmographyCard key={`${item.id}-${item.role}-${item.year}`} item={item} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

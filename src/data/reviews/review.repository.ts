@@ -276,6 +276,9 @@ export async function undoDeleteReview(
     movieId: review.movieId,
     review,
   });
+
+  const { broadcastReviewRestore } = await import("./review.sync");
+  broadcastReviewRestore(review);
 }
 
 /* ------------------------------------

@@ -45,37 +45,46 @@ export function ReviewProvider({
     fetchMovieReviews(movieId).then(setReviews);
 
     // Cross-Tab Sync via Robust Broadcast System
-    import("@/data/reviews/review.broadcast").then(({ subscribeToReviewEvents }) => {
-      const cleanup = subscribeToReviewEvents((event) => {
+    import("@/data/reviews/review.sync").then(({ subscribeToReviewSync }) => {
+      const cleanup = subscribeToReviewSync((event) => {
         setReviews((prev) => {
           // 1. FILTER: Ignore events for other movies
+          // Handle both string and number movieId safely
           const eventMovieId =
-            event.type === "DELETE"
-              ? event.movieId
-              : String(event.review.movieId);
+            event.type === "REVIEW_DELETE"
+              ? String(event.payload.movieId)
+              : String(event.payload.movieId);
 
           if (eventMovieId !== movieId) return prev;
 
           // 2. MERGE
-          if (event.type === "ADD") {
-            const newReview = event.review;
+          if (event.type === "REVIEW_ADD") {
+            const newReview = event.payload as unknown as Review; // Cast to WIP Review type
             // Prevent duplicates
             if (prev.some((r) => r.id === newReview.id)) return prev;
             return [newReview, ...prev];
           }
 
-          if (event.type === "UPDATE") {
-            const updatedReview = event.review;
+          if (event.type === "REVIEW_UPDATE" || event.type === "REVIEW_RESTORE") {
+            const updatedReview = event.payload as unknown as Review; // Cast to WIP Review type
+            // If it's a restore, we might need to add it if it's not in the list (if we filtered deleted ones out)
+            // But if we are keeping deleted ones with deletedAt in the list, then it's just an update.
+            // Check if it exists
+            const exists = prev.some((r) => r.id === updatedReview.id);
+            if (!exists) {
+              // If it's a restore and we don't have it, prepend it?
+              return [updatedReview, ...prev];
+            }
             return prev.map((r) =>
               r.id === updatedReview.id ? updatedReview : r
             );
           }
 
-          if (event.type === "DELETE") {
+          if (event.type === "REVIEW_DELETE") {
             // Mark as deleted (optimistic update style for consistency)
             return prev.map((r) =>
-              r.id === event.reviewId
-                ? { ...r, deletedAt: Date.now() }
+              r.id === event.payload.reviewId
+                ? { ...r, deletedAt: Date.now() } // We don't have exact deletedAt from event payload here easily unless we pass simpler payload, but Date.now() is fine for UI
                 : r
             );
           }
