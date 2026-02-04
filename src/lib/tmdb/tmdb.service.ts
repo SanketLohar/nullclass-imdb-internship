@@ -91,9 +91,18 @@ class TMDBService {
       endpoint.includes("/search") ||
       endpoint.includes("/movie/popular") ||
       endpoint.includes("/movie/top_rated") ||
-      endpoint.includes("/movie/upcoming")
+      endpoint.includes("/movie/upcoming") ||
+      endpoint.includes("/discover/movie")
     ) {
       return { results: [], page: 1, total_pages: 0, total_results: 0 } as T;
+    }
+    if (endpoint.includes("/configuration")) {
+      return {
+        images: {
+          base_url: "http://image.tmdb.org/t/p/",
+          secure_base_url: "https://image.tmdb.org/t/p/",
+        },
+      } as T;
     }
     return {} as T;
   }

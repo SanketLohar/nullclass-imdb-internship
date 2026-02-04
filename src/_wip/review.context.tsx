@@ -43,6 +43,48 @@ export function ReviewProvider({
 
   useEffect(() => {
     fetchMovieReviews(movieId).then(setReviews);
+
+    // Cross-Tab Sync via Robust Broadcast System
+    import("@/data/reviews/review.broadcast").then(({ subscribeToReviewEvents }) => {
+      const cleanup = subscribeToReviewEvents((event) => {
+        setReviews((prev) => {
+          // 1. FILTER: Ignore events for other movies
+          const eventMovieId =
+            event.type === "DELETE"
+              ? event.movieId
+              : String(event.review.movieId);
+
+          if (eventMovieId !== movieId) return prev;
+
+          // 2. MERGE
+          if (event.type === "ADD") {
+            const newReview = event.review;
+            // Prevent duplicates
+            if (prev.some((r) => r.id === newReview.id)) return prev;
+            return [newReview, ...prev];
+          }
+
+          if (event.type === "UPDATE") {
+            const updatedReview = event.review;
+            return prev.map((r) =>
+              r.id === updatedReview.id ? updatedReview : r
+            );
+          }
+
+          if (event.type === "DELETE") {
+            // Mark as deleted (optimistic update style for consistency)
+            return prev.map((r) =>
+              r.id === event.reviewId
+                ? { ...r, deletedAt: Date.now() }
+                : r
+            );
+          }
+
+          return prev;
+        });
+      });
+      return cleanup;
+    });
   }, [movieId]);
 
   function hasUserReviewed(userId: string) {

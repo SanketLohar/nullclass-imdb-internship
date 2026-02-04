@@ -176,6 +176,9 @@ export async function createReview({
     vectorClock: {} // Mock
   });
 
+  const { broadcastReviewAdd } = await import("./review.sync");
+  broadcastReviewAdd(review);
+
   return review;
 }
 
@@ -245,6 +248,9 @@ export async function updateReview(
     vectorClock: {}
   });
 
+  const { broadcastReviewUpdate } = await import("./review.sync");
+  broadcastReviewUpdate(updated);
+
   return updated;
 }
 
@@ -307,6 +313,9 @@ export async function deleteReview(
     deviceId: getDeviceId(),
     vectorClock: {}
   });
+
+  const { broadcastReviewDelete } = await import("./review.sync");
+  broadcastReviewDelete(reviewId, review.movieId);
 }
 
 
@@ -365,6 +374,9 @@ export async function voteReview(
     movieId: review.movieId,
     review,
   });
+
+  const { broadcastReviewUpdate } = await import("./review.sync");
+  broadcastReviewUpdate(review);
 
   return review;
 }
