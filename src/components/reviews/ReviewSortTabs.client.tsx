@@ -13,8 +13,8 @@ export default function ReviewSortTabs({
   onChange: (v: ReviewSort) => void;
 }) {
   const tabs: ReviewSort[] = [
-    "helpful",
     "recent",
+    "helpful",
     "controversial",
   ];
 
@@ -24,11 +24,10 @@ export default function ReviewSortTabs({
         <button
           key={tab}
           onClick={() => onChange(tab)}
-          className={`px-4 py-2 rounded-full text-sm capitalize transition ${
-            value === tab
+          className={`px-4 py-2 rounded-full text-sm capitalize transition ${value === tab
               ? "bg-yellow-500 text-black"
               : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
-          }`}
+            }`}
         >
           {tab}
         </button>

@@ -20,7 +20,7 @@ export default function TrailerCarousel({
     .map((t) => {
       let videoId = "";
       const trimmed = t.trim();
-      
+
       if (!trimmed.includes("youtube.com") && !trimmed.includes("youtu.be")) {
         videoId = trimmed;
       } else if (trimmed.includes("youtube.com/watch?v=")) {
@@ -32,7 +32,7 @@ export default function TrailerCarousel({
       } else {
         videoId = trimmed;
       }
-      
+
       return { type: "trailer" as const, src: videoId };
     });
 
@@ -75,9 +75,9 @@ export default function TrailerCarousel({
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className="relative w-full h-[400px] rounded-xl overflow-hidden bg-black mb-10 group focus:outline-none focus:ring-2 focus:ring-yellow-500"
+      className="relative w-full max-w-7xl mx-auto aspect-[16/9] md:aspect-[2.4/1] rounded-xl overflow-hidden bg-zinc-900/50 mb-10 group focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-2xl border border-white/5"
       tabIndex={0}
       role="region"
       aria-label="Movie trailers and images carousel"
@@ -158,9 +158,8 @@ export default function TrailerCarousel({
                     setIndex(i);
                   }
                 }}
-                className={`w-2 h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
-                  i === index ? "bg-yellow-500 w-6" : "bg-white/50 hover:bg-white/70"
-                }`}
+                className={`w-2 h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500 ${i === index ? "bg-yellow-500 w-6" : "bg-white/50 hover:bg-white/70"
+                  }`}
                 aria-label={`Go to slide ${i + 1}`}
                 aria-current={i === index ? "true" : "false"}
               />

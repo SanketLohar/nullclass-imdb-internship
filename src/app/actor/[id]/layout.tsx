@@ -151,43 +151,45 @@ export default async function ActorLayout({
       />
       <div className="container mx-auto px-4 py-8">
         {/* HERO */}
-        <div className="relative h-[420px] rounded-xl overflow-hidden mb-12">
-          <Image
-            src={actor.coverImage}
-            alt={actor.name}
-            fill
-            priority
-            fetchPriority="high"
-            sizes="100vw"
-            className="object-cover"
-            quality={85}
-            placeholder="blur"
-            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90" />
+        {/* HERO */}
+        <div className="relative h-[320px] rounded-xl overflow-hidden mb-12 bg-zinc-900 border border-zinc-800">
+          {/* Abstract Background (Spotify Style) */}
+          <div className="absolute inset-0 overflow-hidden">
+            <Image
+              src={actor.image || "/placeholder-actor.jpg"}
+              alt={localizedName || actor?.name || "Actor Background"}
+              fill
+              priority
+              fetchPriority="high"
+              sizes="100vw"
+              className="object-cover object-top opacity-50 blur-3xl scale-125 saturate-150"
+              quality={60}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-transparent" />
+          </div>
 
-          <div className="relative h-full flex items-end pb-8 px-6">
+          <div className="relative h-full flex items-end pb-8 px-6 z-10">
             <div className="flex gap-8 items-end">
               <Image
-                src={actor.image}
-                alt={actor.name}
+                src={actor.image || "/placeholder-actor.jpg"}
+                alt={localizedName || actor?.name || "Actor Profile"}
                 width={180}
                 height={180}
-                className="rounded-xl border-4 border-black object-cover"
+                className="rounded-xl border-4 border-zinc-950 shadow-2xl object-cover bg-zinc-800"
                 priority
                 fetchPriority="high"
-                sizes="180px"
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                sizes="(max-width: 768px) 140px, 180px"
               />
-              <h1 className="text-4xl font-bold">
-                {localizedName}
-              </h1>
-              {alternateNames.length > 0 && (
-                <p className="text-sm text-zinc-400 mt-1">
-                  Also known as: {alternateNames.join(", ")}
-                </p>
-              )}
+              <div className="pb-2">
+                <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-md">
+                  {localizedName}
+                </h1>
+                {alternateNames.length > 0 && (
+                  <p className="text-sm text-zinc-400 mt-2 font-medium">
+                    Also known as: {alternateNames.join(", ")}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

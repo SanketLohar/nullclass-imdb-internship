@@ -1,36 +1,30 @@
 import { memo, useState } from "react";
-import type { Review } from "@/_wip/review/review.types";
-import { useAuth } from "@/_wip/auth/auth.context";
-import { useReviews } from "@/_wip/review.context";
+import type { Review } from "@/data/reviews/review.types";
 import ReviewActions from "./ReviewActions.client";
 import StarRatingInput from "./StarRatingInput";
 
 type Props = {
   review: Review;
+  currentUserId?: string;
+  onDelete?: () => void;
+  onReport?: () => void;
+  onEdit?: (content: string, rating: number) => void;
 };
 
 function formatTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
-
   const seconds = Math.floor(diff / 1000);
   if (seconds < 60) return "Just now";
-
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes} min ago`;
-
   const hours = Math.floor(minutes / 60);
-  if (hours < 24)
-    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
   const days = Math.floor(hours / 24);
   return `${days} day${days > 1 ? "s" : ""} ago`;
 }
 
-function ReviewItem({ review }: Props) {
-  const { user } = useAuth();
-  const { updateReview } = useReviews();
-
-  const isOwner = user?.id === review.author.id;
+function ReviewItem({ review, currentUserId, onDelete, onReport, onEdit }: Props) {
+  const isOwner = currentUserId && review.author.id === currentUserId;
 
   const [isEditing, setIsEditing] = useState(false);
   const [draftContent, setDraftContent] = useState(review.content);
@@ -44,7 +38,7 @@ function ReviewItem({ review }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-white">
-            {review.author.name}
+            {review.author.username}
           </p>
           <p className="text-xs text-neutral-400">
             {formatTime(review.createdAt)}
@@ -52,10 +46,17 @@ function ReviewItem({ review }: Props) {
         </div>
 
         {!isEditing && (
-          <div className="flex items-center gap-1 text-yellow-400 text-sm">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <span key={i}>{i < stars ? "★" : "☆"}</span>
-            ))}
+          <div className="flex items-center gap-2">
+            {review.moderation?.isFlagged && (
+              <span className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-500 border border-red-500/20">
+                Reported
+              </span>
+            )}
+            <div className="flex items-center gap-1 text-yellow-400 text-sm">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i}>{i < stars ? "★" : "☆"}</span>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -79,12 +80,8 @@ function ReviewItem({ review }: Props) {
 
           <div className="mt-3 flex gap-3">
             <button
-              onClick={async () => {
-                await updateReview(
-                  review.id,
-                  draftRating,
-                  draftContent
-                );
+              onClick={() => {
+                if (onEdit) onEdit(draftContent, draftRating);
                 setIsEditing(false);
               }}
               className="rounded-md bg-yellow-500 px-3 py-1 text-sm text-black"
@@ -110,18 +107,11 @@ function ReviewItem({ review }: Props) {
             {review.content}
           </p>
 
-          {isOwner && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="mt-2 text-xs text-yellow-400 hover:underline"
-            >
-              Edit
-            </button>
-          )}
-
           <ReviewActions
-            reviewId={review.id}
-            authorId={review.author.id}
+            isOwner={!!isOwner}
+            onEdit={() => setIsEditing(true)}
+            onDelete={onDelete}
+            onReport={onReport}
           />
         </>
       )}

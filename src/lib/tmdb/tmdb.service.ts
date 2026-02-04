@@ -223,7 +223,7 @@ class TMDBService {
   async getActorDetails(actorId: number): Promise<any> {
     const cacheKey = `tmdb-actor-${actorId}`;
     return coalesceRequest(cacheKey, () =>
-      this.request<any>(`/person/${actorId}`)
+      this.request<any>(`/person/${actorId}`, { append_to_response: "external_ids" })
     );
   }
 
@@ -255,11 +255,17 @@ class TMDBService {
 
   async getPopularActors(page = 1): Promise<TMDBResponse<any>> {
     const cacheKey = `tmdb-popular-actors-${page}`;
-    return coalesceRequest(cacheKey, () =>
+    const data = await coalesceRequest(cacheKey, () =>
       this.request<TMDBResponse<any>>("/person/popular", {
         page: page.toString(),
       })
     );
+
+    // Ensure safe return
+    if (!data || !data.results) {
+      return { results: [], page: 1, total_pages: 0, total_results: 0 };
+    }
+    return data;
   }
 
   async getSimilarActors(actorId: number): Promise<any[]> {

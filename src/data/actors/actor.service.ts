@@ -5,7 +5,7 @@ import { tmdbService } from "@/lib/tmdb/tmdb.service";
 
 export const runtime = "edge";
 
-export async function getActorById(id: number): Promise<Actor | null> {
+export async function getActorById(id: number, options?: { strict?: boolean }): Promise<Actor | null> {
   try {
     const [details, credits] = await Promise.all([
       tmdbService.getActorDetails(id),
@@ -14,10 +14,28 @@ export async function getActorById(id: number): Promise<Actor | null> {
 
     if (!details) return null;
 
+    // Fail Fast: Strict Mode Checks
+    if (options?.strict) {
+      const hasBio = details.biography && details.biography.length > 50 && details.biography !== "No biography available.";
+      const hasImdb = !!details.imdb_id;
+
+      if (!hasBio || !hasImdb) {
+        // console.log(`[Skipped] ${details.name} (ID: ${id}) - Missing Bio or IMDb`);
+        return null;
+      }
+    }
+
     // Process filmography
     const cast = credits?.cast || [];
     const filmography: FilmographyItem[] = cast
-      .filter((m: any) => m.poster_path && m.release_date) // Filter out items with no poster or date
+      .filter((m: any) =>
+        m.id &&
+        m.poster_path &&
+        m.release_date &&
+        m.vote_average > 0 &&
+        m.vote_count > 0 &&
+        m.title
+      ) // Filter out items with no poster, date, or ratings
       .map((m: any) => ({
         id: m.id,
         title: m.title,
@@ -37,23 +55,19 @@ export async function getActorById(id: number): Promise<Actor | null> {
 
     const awards = await fetchActorAwards(topMovies);
 
-    // Handle socials from external_ids if present in details (tmdbService.getActorDetails returns "any" currently, 
-    // but usually /person/{id} includes external_ids if append_to_response is used. 
-    // Our tmdbService.getActorDetails uses /person/{id}. It DOES NOT append external_ids by default. 
-    // We need to fetch external ids separately or update tmdbService. 
-    // Let's assume for now we might miss socials or we fetch them. 
-    // Actually, let's fetch them separately to be safe since we removed the append_to_response arg support in the service call.
-    let socials: any = {};
-    try {
-      // We can't easily fetch person external ids with current service without adding another method.
-      // Let's rely on what we have or add getPersonExternalIds to service if needed.
-      // For now, let's try to map what we can. 
-      // *Wait, previous code passed { append_to_response: "external_ids" }.*
-      // I should stick to that pattern or update service.
-      // I'll update the service in a follow-up if needed, but for now let's just leave it empty 
-      // OR, honestly, I should add getPersonExternalIds to tmdbService to be 100% correct.
-      // But for this step, addressing the crash is priority.
-    } catch (e) { }
+    // Final Strict Check: Must have awards
+    if (options?.strict && awards.length === 0) {
+      // console.log(`[Skipped] ${details.name} (ID: ${id}) - No Awards`);
+      return null;
+    }
+
+    // Handle socials from external_ids
+    const socials = {
+      instagram: details.external_ids?.instagram_id ? `https://instagram.com/${details.external_ids.instagram_id}` : "",
+      twitter: details.external_ids?.twitter_id ? `https://twitter.com/${details.external_ids.twitter_id}` : "",
+      imdb: details.imdb_id ? `https://www.imdb.com/name/${details.imdb_id}/` : "",
+      facebook: details.external_ids?.facebook_id ? `https://facebook.com/${details.external_ids.facebook_id}` : "",
+    };
 
     return {
       id: details.id,
@@ -65,11 +79,7 @@ export async function getActorById(id: number): Promise<Actor | null> {
         ? `https://image.tmdb.org/t/p/h632${details.profile_path}`
         : "/placeholder-actor.jpg",
       coverImage: filmography[0]?.poster || "/placeholder-backdrop.jpg",
-      social: {
-        instagram: details.external_ids?.instagram_id ? `https://instagram.com/${details.external_ids.instagram_id}` : "",
-        twitter: details.external_ids?.twitter_id ? `https://twitter.com/${details.external_ids.twitter_id}` : "",
-        imdb: details.imdb_id ? `https://www.imdb.com/name/${details.imdb_id}/` : "",
-      },
+      social: socials,
       awards: awards,
       filmography: filmography,
       similarActors: [],
@@ -88,88 +98,83 @@ async function fetchActorAwards(movies: FilmographyItem[]): Promise<ActorAward[]
   const awardsList: ActorAward[] = [];
   const processedAwards = new Set<string>();
 
-  const results = await Promise.all(
-    movies.map(async (movie) => {
-      try {
-        const movieDetails = await tmdbService.getMovieExternalIds(movie.id);
-        if (!movieDetails?.imdb_id) return null;
+  // THROTTLING: Process sequentially to avoid OMDb rate limits causing `fetch failed`
+  for (const movie of movies) {
+    try {
+      const movieDetails = await tmdbService.getMovieExternalIds(movie.id);
+      if (!movieDetails?.imdb_id) continue;
 
-        const awardsStr = await getMovieAwards(movieDetails.imdb_id);
-        if (!awardsStr || awardsStr === "N/A" || awardsStr.includes("No awards")) return null;
+      const awardsStr = await getMovieAwards(movieDetails.imdb_id);
+      if (!awardsStr || awardsStr === "N/A" || awardsStr.includes("No awards")) continue;
 
-        return { movieTitle: movie.title, awardsStr, year: movie.year };
-      } catch (e) {
-        return null;
-      }
-    })
-  );
+      const res = { movieTitle: movie.title, awardsStr, year: movie.year };
 
-  const AWARD_KEYWORDS = [
-    { key: "Oscar", label: "Academy Awards" },
-    { key: "Golden Globe", label: "Golden Globe Awards" },
-    { key: "BAFTA", label: "BAFTA Awards" },
-    { key: "Emmy", label: "Primetime Emmy Awards" },
-    { key: "Cannes", label: "Cannes Film Festival" },
-    { key: "Venice", label: "Venice Film Festival" },
-    { key: "Berlin", label: "Berlin Film Festival" },
-    { key: "Saturn", label: "Saturn Awards" },
-    { key: "MTV", label: "MTV Movie Awards" },
-    { key: "Hong Kong", label: "Hong Kong Film Awards" },
-    { key: "Golden Horse", label: "Golden Horse Awards" },
-    { key: "Screen Actors Guild", label: "SAG Awards" },
-    { key: "Critics", label: "Critics Choice Awards" },
-    { key: "People's Choice", label: "People's Choice Awards" },
-    { key: "Teen Choice", label: "Teen Choice Awards" },
-    { key: "Annie", label: "Annie Awards" },
-  ];
+      // --- Process Logic (Same as before) ---
+      const { movieTitle: mTitle, awardsStr: aStr, year: mYear } = res;
 
-  results.forEach(res => {
-    if (!res) return;
-    const { movieTitle, awardsStr, year } = res;
+      const AWARD_KEYWORDS = [
+        { key: "Oscar", label: "Academy Awards" },
+        { key: "Golden Globe", label: "Golden Globe Awards" },
+        { key: "BAFTA", label: "BAFTA Awards" },
+        { key: "Emmy", label: "Primetime Emmy Awards" },
+        { key: "Cannes", label: "Cannes Film Festival" },
+        { key: "Venice", label: "Venice Film Festival" },
+        { key: "Berlin", label: "Berlin Film Festival" },
+        { key: "Saturn", label: "Saturn Awards" },
+        { key: "MTV", label: "MTV Movie Awards" },
+        { key: "Hong Kong", label: "Hong Kong Film Awards" },
+        { key: "Golden Horse", label: "Golden Horse Awards" },
+        { key: "Screen Actors Guild", label: "SAG Awards" },
+        { key: "Critics", label: "Critics Choice Awards" },
+        { key: "People's Choice", label: "People's Choice Awards" },
+        { key: "Teen Choice", label: "Teen Choice Awards" },
+        { key: "Annie", label: "Annie Awards" },
+      ];
 
-    let foundSpecific = false;
-    AWARD_KEYWORDS.forEach(({ key, label }) => {
-      if (awardsStr.includes(key)) {
-        foundSpecific = true;
+      let foundSpecific = false;
+      AWARD_KEYWORDS.forEach(({ key, label }) => {
+        if (aStr.includes(key)) {
+          foundSpecific = true;
+          const isWinText = aStr.match(new RegExp(`Won \\d+ ${key}`, 'i'));
+          const finalCategory = isWinText ? "Winner" : "Nominee";
+          const finalIsWin = !!isWinText;
+          const uniqueId = `${label}-${mYear}-${mTitle}`;
+          if (!processedAwards.has(uniqueId)) {
+            awardsList.push({
+              name: label,
+              category: finalCategory,
+              year: mYear,
+              film: mTitle,
+              isWinner: finalIsWin
+            });
+            processedAwards.add(uniqueId);
+          }
+        }
+      });
 
-        const isWinText = awardsStr.match(new RegExp(`Won \\d+ ${key}`, 'i'));
-        // const isNomText = awardsStr.match(new RegExp(`Nominated for \\d+ ${key}`, 'i'));
+      if (!foundSpecific) {
+        const winsMatch = aStr.match(/(\d+) win/i);
+        const nomsMatch = aStr.match(/(\d+) nomination/i);
+        const wins = winsMatch ? parseInt(winsMatch[1]) : 0;
+        const noms = nomsMatch ? parseInt(nomsMatch[1]) : 0;
 
-        const finalCategory = isWinText ? "Winner" : "Nominee";
-        const finalIsWin = !!isWinText;
-
-        const uniqueId = `${label}-${year}-${movieTitle}`;
-        if (!processedAwards.has(uniqueId)) {
+        if (wins > 0 || noms > 0) {
+          const summaryName = wins > 0 ? "International & Festival Awards" : "Award Nominations";
           awardsList.push({
-            name: label,
-            category: finalCategory,
-            year: year,
-            film: movieTitle,
-            isWinner: finalIsWin
+            name: summaryName,
+            category: `${wins} Wins, ${noms} Nominations`,
+            year: mYear,
+            film: mTitle,
+            isWinner: wins > 0
           });
-          processedAwards.add(uniqueId);
         }
       }
-    });
+      // --- End Process Logic ---
 
-    if (!foundSpecific) {
-      const winsMatch = awardsStr.match(/(\d+) win/i);
-      const nomsMatch = awardsStr.match(/(\d+) nomination/i);
-      const wins = winsMatch ? parseInt(winsMatch[1]) : 0;
-      const noms = nomsMatch ? parseInt(nomsMatch[1]) : 0;
-
-      if (wins > 0 || noms > 0) {
-        const summaryName = wins > 0 ? "International & Festival Awards" : "Award Nominations";
-        awardsList.push({
-          name: summaryName,
-          category: `${wins} Wins, ${noms} Nominations`,
-          year: year,
-          film: movieTitle,
-          isWinner: wins > 0
-        });
-      }
+    } catch (e) {
+      // Ignore single movie failure
     }
-  });
+  }
 
   return awardsList.sort((a, b) => b.year - a.year);
 }

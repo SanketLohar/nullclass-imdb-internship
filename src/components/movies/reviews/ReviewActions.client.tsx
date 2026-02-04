@@ -4,35 +4,49 @@ import { useReviews } from "@/_wip/review.context";
 import { useAuth } from "@/_wip/auth/auth.context";
 
 export default function ReviewActions({
-  reviewId,
-  authorId,
+  onEdit,
+  onDelete,
+  onReport,
+  isOwner,
 }: {
-  reviewId: string;
-  authorId: string;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onReport?: () => void;
+  isOwner?: boolean;
 }) {
-  const { removeReview } = useReviews();
-  const { user } = useAuth();
-
-  if (!user || user.id !== authorId) {
-    return null;
+  if (isOwner) {
+    return (
+      <div className="mt-2 flex gap-3">
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            className="text-xs text-yellow-400 hover:underline"
+          >
+            Edit
+          </button>
+        )}
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="text-xs text-red-400 hover:underline"
+          >
+            Delete
+          </button>
+        )}
+      </div>
+    );
   }
 
-  const handleDelete = async () => {
-    await removeReview(reviewId);
-
-    window.dispatchEvent(
-      new CustomEvent("review:deleted", {
-        detail: reviewId,
-      })
-    );
-  };
-
   return (
-    <button
-      onClick={handleDelete}
-      className="mt-3 text-xs text-red-400 hover:underline"
-    >
-      Delete
-    </button>
+    <div className="mt-2">
+      {onReport && (
+        <button
+          onClick={onReport}
+          className="text-xs text-neutral-400 hover:text-red-400 transition-colors"
+        >
+          Report
+        </button>
+      )}
+    </div>
   );
 }

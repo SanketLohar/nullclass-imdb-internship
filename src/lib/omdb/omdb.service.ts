@@ -35,13 +35,17 @@ export async function getMovieAwards(imdbId: string): Promise<string> {
             )}`
         );
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
         const response = await fetch(
             `${OMDB_BASE_URL}?apikey=${apiKey}&i=${imdbId}`,
             {
                 // Next.js optimization
                 cache: "force-cache",
+                signal: controller.signal,
             }
-        );
+        ).finally(() => clearTimeout(timeoutId));
 
         if (!response.ok) {
             throw new Error(`OMDb HTTP error ${response.status}`);
@@ -61,8 +65,12 @@ export async function getMovieAwards(imdbId: string): Promise<string> {
         awardsCache.set(imdbId, awards);
 
         return awards;
-    } catch (error) {
-        console.error("[OMDb] API error:", error);
+    } catch (error: any) {
+        if (error.name === "AbortError") {
+            console.warn(`[OMDb] Request timed out for ${imdbId} after 8s`);
+        } else {
+            console.error("[OMDb] API error:", error);
+        }
 
         const fallback = "No awards information available.";
         awardsCache.set(imdbId, fallback);

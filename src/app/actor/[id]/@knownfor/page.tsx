@@ -10,43 +10,11 @@ export default async function KnownForPage({
   const { id } = await params;
   const actorId = Number(id);
 
-  let filmography: any[] = [];
+  const { getActorFilmography } = await import("@/data/actors/actor.service");
 
-  if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
-    try {
-      const { tmdbService } = await import("@/lib/tmdb/tmdb.service");
-      const [credits, config] = await Promise.all([
-        tmdbService.getActorCredits(actorId),
-        tmdbService.getConfig()
-      ]);
-
-      filmography = (credits?.cast || []).map(c => ({
-        id: c.id,
-        title: c.title,
-        role: c.character,
-        year: c.release_date ? new Date(c.release_date).getFullYear() : 0,
-        image: c.poster_path
-          ? `${config.images.secure_base_url}w500${c.poster_path}`
-          : "/placeholder-movie.jpg",
-        poster: c.poster_path
-          ? `${config.images.secure_base_url}w500${c.poster_path}`
-          : "/placeholder-movie.jpg",
-        rating: c.vote_average,
-        genre: "" // Genre needing extra fetch, leaving empty for list
-      }));
-
-    } catch (e) {
-      console.error("Failed to fetch filmography", e);
-    }
-  }
-
-  // Fallback to mock if empty (and if mock exists, but for now we assume TMDB works or we leave empty)
-  if (filmography.length === 0) {
-    const actor = await getActorById(actorId);
-    if (actor) {
-      filmography = actor.filmography || [];
-    }
-  }
+  // Use the strict service that filters out garbage (no rating, no poster)
+  // This ensures consistency with the "strict rules" requested.
+  let filmography = await getActorFilmography(actorId);
 
   return (
     <section>

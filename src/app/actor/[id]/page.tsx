@@ -82,14 +82,16 @@ export default async function ActorPage({
     <div className="container mx-auto px-4 py-8">
       {/* Cover */}
       <div className="relative h-[420px] rounded-xl overflow-hidden mb-8">
-        <Image
-          src={actor.coverImage}
-          alt={actor.name}
-          fill
-          priority
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90" />
+        <div className="absolute inset-0 bg-zinc-900">
+          <Image
+            src={actor.image}
+            alt={actor.name}
+            fill
+            priority
+            className="object-cover object-top opacity-40 blur-3xl scale-110"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
 
         <div className="relative h-full flex items-end pb-8 px-6">
           <div className="flex items-end gap-8">

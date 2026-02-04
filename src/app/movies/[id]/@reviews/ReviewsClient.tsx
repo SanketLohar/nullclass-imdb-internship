@@ -12,6 +12,7 @@ import ReviewActions from "@/components/reviews/ReviewActions.client";
 import UndoToast from "@/components/reviews/UndoToast.client";
 import ReviewEditBadge from "@/components/reviews/ReviewEditBadge.client";
 import ReviewHistory from "@/components/reviews/ReviewHistory.client";
+import ReviewItem from "@/components/movies/reviews/ReviewItem";
 import { useReviewLiveUpdates } from "@/hooks/useReviewLiveUpdates";
 
 import { useReviewBackgroundSync } from "@/hooks/useReviewBackgroundSync";
@@ -22,6 +23,7 @@ import {
   voteReview,
   updateReview,
   flagReview,
+  undoDeleteReview,
 } from "@/data/reviews/review.repository";
 
 import ReviewSortTabs, {
@@ -41,13 +43,13 @@ export default function ReviewsClient({
 }) {
   // ✅ background retry engine
   useReviewBackgroundSync();
-  
+
   // Get authenticated user
   const { user } = useAuth();
 
   const [reviews, setReviews] =
     useState<Review[]>(initialReviews);
-  
+
   // Hydrate from IndexedDB on mount - merge with initial reviews to avoid duplicates
   useEffect(() => {
     async function hydrate() {
@@ -83,17 +85,20 @@ export default function ReviewsClient({
   const [deletedReview, setDeletedReview] =
     useState<Review | null>(null);
 
+  const [notification, setNotification] =
+    useState<string | null>(null);
+
   const [historyReview, setHistoryReview] =
     useState<Review | null>(null);
 
   const [sort, setSort] =
-    useState<ReviewSort>("helpful");
+    useState<ReviewSort>("recent");
 
   const [, startTransition] = useTransition();
 
   const sortedReviews = useMemo(
-    () => sortReviews(reviews, sort),
-    [reviews, sort]
+    () => sortReviews(reviews, sort, user?.id),
+    [reviews, sort, user?.id]
   );
 
   /* ----------------------------------
@@ -152,7 +157,7 @@ export default function ReviewsClient({
 
     startTransition(async () => {
       if (!user) return;
-      
+
       try {
         const saved = await createReview({
           movieId: input.movieId,
@@ -172,7 +177,7 @@ export default function ReviewsClient({
       } catch (error) {
         // Rollback optimistic update on error
         setReviews((p) => p.filter((r) => r.id !== optimistic.id));
-        
+
         // Show error message
         const errorElement = document.getElementById("review-auth-error");
         if (errorElement) {
@@ -193,6 +198,8 @@ export default function ReviewsClient({
     review: Review,
     newContent: string
   ) {
+    if (!user) return; // Guard
+
     setReviews((p) =>
       p.map((r) =>
         r.id === review.id
@@ -206,7 +213,8 @@ export default function ReviewsClient({
     startTransition(async () => {
       const saved = await updateReview(
         review.id,
-        newContent
+        newContent,
+        user.id
       );
 
       if (!saved) {
@@ -231,6 +239,8 @@ export default function ReviewsClient({
      DELETE
   ---------------------------------- */
   function handleDelete(review: Review) {
+    if (!user) return;
+
     setReviews((p) =>
       p.filter((r) => r.id !== review.id)
     );
@@ -238,7 +248,7 @@ export default function ReviewsClient({
     setDeletedReview(review);
 
     startTransition(() => {
-      deleteReview(review.id);
+      deleteReview(review.id, user.id);
     });
   }
 
@@ -246,38 +256,45 @@ export default function ReviewsClient({
      REPORT
   ---------------------------------- */
   function handleReport(review: Review) {
+    // Don't remove from UI, just update state to show reported status
     setReviews((p) =>
-      p.filter((r) => r.id !== review.id)
+      p.map((r) => r.id === review.id ? {
+        ...r,
+        moderation: { ...r.moderation, isFlagged: true }
+      } : r)
     );
+
+    setNotification("Review reported and added to controversial");
+    setTimeout(() => setNotification(null), 3000);
 
     startTransition(() => {
       flagReview(review.id, "User reported");
     });
   }
   useReviewLiveUpdates({
-  movieId,
-  onCreate: (review) => {
-    setReviews((prev) => {
-      if (prev.some((r) => r.id === review.id))
-        return prev;
-      return [review, ...prev];
-    });
-  },
+    movieId,
+    onCreate: (review) => {
+      setReviews((prev) => {
+        if (prev.some((r) => r.id === review.id))
+          return prev;
+        return [review, ...prev];
+      });
+    },
 
-  onUpdate: (review) => {
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === review.id ? review : r
-      )
-    );
-  },
+    onUpdate: (review) => {
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === review.id ? review : r
+        )
+      );
+    },
 
-  onDelete: (id) => {
-    setReviews((prev) =>
-      prev.filter((r) => r.id !== id)
-    );
-  },
-});
+    onDelete: (id) => {
+      setReviews((prev) =>
+        prev.filter((r) => r.id !== id)
+      );
+    },
+  });
 
 
   return (
@@ -304,114 +321,28 @@ export default function ReviewsClient({
         action={action}
       />
 
-      {sortedReviews.map((review, index) => (
-        <div
-          key={`${review.id}-${review.createdAt}-${index}`}
-          className="bg-zinc-900 rounded-xl p-5 mb-6"
-        >
-          <div className="flex justify-between mb-1">
-            <p className="font-semibold">
-              {review.author.username}
-            </p>
-            <span className="text-yellow-400">
-              ⭐ {review.rating}/10
-            </span>
-          </div>
-
-          {review.revisions.length > 0 && (
-            <ReviewEditBadge
-              onClick={() =>
-                setHistoryReview(review)
-              }
-            />
-          )}
-
-          {editingId === review.id ? (
-            <ReviewEditForm
-              initialValue={review.content}
-              onSave={(v) =>
-                handleEdit(review, v)
-              }
-              onCancel={() =>
-                setEditingId(null)
-              }
-            />
-          ) : (
-            <p className="text-zinc-300 mb-3">
-              {review.content}
-            </p>
-          )}
-
-          <ReviewVotes
-            up={review.votes.up}
-            down={review.votes.down}
-            onUpvote={() => {
-              if (!user) {
-                const errorElement = document.getElementById("review-auth-error");
-                if (errorElement) {
-                  errorElement.textContent = "Please login to vote";
-                  errorElement.classList.remove("hidden");
-                  setTimeout(() => errorElement.classList.add("hidden"), 5000);
-                }
-                return;
-              }
-              voteReview(review.id, "up", user.id).then((updated) => {
-                if (updated) {
-                  setReviews((prev) =>
-                    prev.map((r) => (r.id === review.id ? updated : r))
-                  );
-                }
-              }).catch((error) => {
-                const errorElement = document.getElementById("review-auth-error");
-                if (errorElement) {
-                  errorElement.textContent = error.message || "Failed to vote";
-                  errorElement.classList.remove("hidden");
-                  setTimeout(() => errorElement.classList.add("hidden"), 5000);
-                }
-              });
-            }}
-            onDownvote={() => {
-              if (!user) {
-                const errorElement = document.getElementById("review-auth-error");
-                if (errorElement) {
-                  errorElement.textContent = "Please login to vote";
-                  errorElement.classList.remove("hidden");
-                  setTimeout(() => errorElement.classList.add("hidden"), 5000);
-                }
-                return;
-              }
-              voteReview(review.id, "down", user.id).then((updated) => {
-                if (updated) {
-                  setReviews((prev) =>
-                    prev.map((r) => (r.id === review.id ? updated : r))
-                  );
-                }
-              }).catch((error) => {
-                const errorElement = document.getElementById("review-auth-error");
-                if (errorElement) {
-                  errorElement.textContent = error.message || "Failed to vote";
-                  errorElement.classList.remove("hidden");
-                  setTimeout(() => errorElement.classList.add("hidden"), 5000);
-                }
-              });
-            }}
+      <div className="space-y-4">
+        {sortedReviews.map((review, index) => (
+          <ReviewItem
+            key={`${review.id}-${review.createdAt}-${index}`}
+            review={review}
+            currentUserId={user?.id}
+            onDelete={() => handleDelete(review)}
+            onReport={() => handleReport(review)}
+            onEdit={(content, rating) => handleEdit(review, content)}
           />
+        ))}
+      </div>
 
-          {!review.id.startsWith("temp") && (
-            <ReviewActions
-              onEdit={() =>
-                setEditingId(review.id)
-              }
-              onDelete={() =>
-                handleDelete(review)
-              }
-              onReport={() =>
-                handleReport(review)
-              }
-            />
-          )}
+      {/* Notification Toast */}
+      {notification && (
+        <div className="fixed bottom-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-2 rounded-lg bg-zinc-800 border border-zinc-700 p-4 shadow-xl">
+            <span className="text-xl">🛡️</span>
+            <p className="text-sm font-medium text-white">{notification}</p>
+          </div>
         </div>
-      ))}
+      )}
 
       {deletedReview && (
         <UndoToast
@@ -420,6 +351,9 @@ export default function ReviewsClient({
               deletedReview,
               ...p,
             ]);
+            startTransition(() => {
+              undoDeleteReview(deletedReview.id);
+            });
             setDeletedReview(null);
           }}
           onClose={() =>
