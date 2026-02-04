@@ -12,7 +12,7 @@ export default function CastCarousel({ cast }: Props) {
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-12">
-      <h2 className="mb-6 text-2xl font-bold text-white">
+      <h2 className="mb-6 text-2xl font-bold text-foreground">
         Top Cast
       </h2>
 
@@ -20,7 +20,7 @@ export default function CastCarousel({ cast }: Props) {
         {cast.map((actor) => (
           <div
             key={actor.id}
-            className="min-w-[160px] rounded-xl bg-white/10 p-4 backdrop-blur transition hover:bg-white/15"
+            className="min-w-[160px] rounded-xl bg-card border border-border p-4 transition hover:bg-secondary/50"
           >
             {actor.profileUrl ? (
               <Image
@@ -31,17 +31,17 @@ export default function CastCarousel({ cast }: Props) {
                 className="rounded-lg object-cover"
               />
             ) : (
-              <div className="flex h-[220px] items-center justify-center rounded-lg bg-white/5 text-xs text-white/50">
+              <div className="flex h-[220px] items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
                 No Image
               </div>
             )}
 
-            <h3 className="mt-3 text-sm font-semibold text-white">
+            <h3 className="mt-3 text-sm font-semibold text-foreground truncate">
               {actor.name}
             </h3>
 
             {actor.character && (
-              <p className="text-xs text-white/70">
+              <p className="text-xs text-muted-foreground truncate">
                 {actor.character}
               </p>
             )}

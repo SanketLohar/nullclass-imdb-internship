@@ -13,7 +13,7 @@ class CircuitBreaker {
   private lastFailureTime = 0;
   private successCount = 0;
 
-  constructor(private options: CircuitBreakerOptions) {}
+  constructor(private options: CircuitBreakerOptions) { }
 
   async execute<T>(
     fn: () => Promise<T>,

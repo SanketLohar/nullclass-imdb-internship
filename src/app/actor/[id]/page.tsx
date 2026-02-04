@@ -82,7 +82,7 @@ export default async function ActorPage({
     <div className="container mx-auto px-4 py-8">
       {/* Cover */}
       <div className="relative h-[420px] rounded-xl overflow-hidden mb-8">
-        <div className="absolute inset-0 bg-zinc-900">
+        <div className="absolute inset-0 bg-muted">
           <Image
             src={actor.image}
             alt={actor.name}
@@ -91,7 +91,7 @@ export default async function ActorPage({
             className="object-cover object-top opacity-40 blur-3xl scale-110"
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
 
         <div className="relative h-full flex items-end pb-8 px-6">
           <div className="flex items-end gap-8">
@@ -100,7 +100,7 @@ export default async function ActorPage({
               alt={actor.name}
               width={180}
               height={180}
-              className="rounded-xl border-4 border-black object-cover"
+              className="rounded-xl border-4 border-background object-cover"
             />
 
             <div>
@@ -126,7 +126,7 @@ export default async function ActorPage({
       <div className="grid md:grid-cols-3 gap-8">
         {/* Sidebar */}
         <aside className="space-y-6 sticky top-24">
-          <div className="bg-zinc-800 rounded-xl p-6">
+          <div className="bg-card border border-border rounded-xl p-6">
             <h3 className="font-semibold mb-4">
               Personal Info
             </h3>
@@ -142,7 +142,7 @@ export default async function ActorPage({
           </div>
 
           {(actor.socialMedia.instagram || actor.socialMedia.twitter || actor.socialMedia.imdb) && (
-            <div className="bg-zinc-800 rounded-xl p-6">
+            <div className="bg-card border border-border rounded-xl p-6">
               <h3 className="font-semibold mb-4">
                 Social
               </h3>
@@ -173,7 +173,7 @@ export default async function ActorPage({
             <h2 className="text-2xl font-bold mb-4">
               Biography
             </h2>
-            <p className="text-zinc-300 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               {actor.biography}
             </p>
           </section>
@@ -188,7 +188,7 @@ export default async function ActorPage({
                 <Link
                   key={movie.id}
                   href={`/movies/${movie.id}`}
-                  className="bg-zinc-800 rounded-lg overflow-hidden hover:scale-105 transition-transform"
+                  className="bg-card border border-border rounded-lg overflow-hidden hover:scale-105 transition-transform"
                 >
                   <div className="relative aspect-[2/3]">
                     <Image
@@ -207,10 +207,10 @@ export default async function ActorPage({
                     <h3 className="font-semibold">
                       {movie.title}
                     </h3>
-                    <p className="text-sm text-zinc-400">
+                    <p className="text-sm text-muted-foreground">
                       as {movie.role}
                     </p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted-foreground/70">
                       {movie.year}
                     </p>
                   </div>
@@ -234,7 +234,7 @@ function Stat({
   text: string;
 }) {
   return (
-    <div className="flex items-center gap-2 text-sm bg-black/50 px-3 py-1.5 rounded-full">
+    <div className="flex items-center gap-2 text-sm bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full">
       {icon}
       {text}
     </div>
@@ -250,7 +250,7 @@ function Info({
 }) {
   return (
     <div className="mb-3">
-      <p className="text-zinc-400 text-sm">{label}</p>
+      <p className="text-muted-foreground text-sm">{label}</p>
       <p>{value}</p>
     </div>
   );

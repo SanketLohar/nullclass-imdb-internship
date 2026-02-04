@@ -77,7 +77,7 @@ export async function getActorById(id: number, options?: { strict?: boolean }): 
       biography: details.biography || "",
       image: details.profile_path
         ? `https://image.tmdb.org/t/p/h632${details.profile_path}`
-        : "/placeholder-actor.jpg",
+        : "/placeholder-actor.svg",
       coverImage: filmography[0]?.poster || "/placeholder-backdrop.jpg",
       social: socials,
       awards: awards,

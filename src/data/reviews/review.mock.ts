@@ -14,7 +14,7 @@ export const reviewStore: Review[] = [
       id: "u1",
       username: "rahul_verma",
     },
-    rating: 9,
+    rating: 5,
     content: "Visually stunning and emotionally powerful. Villeneuve delivers again.",
     votes: {
       up: 24,
@@ -39,7 +39,7 @@ export const reviewStore: Review[] = [
       id: "u2",
       username: "ananya_s",
     },
-    rating: 8,
+    rating: 4,
     content: "Slow in the middle but world building is insane. The cinematography alone is worth the watch.",
     votes: {
       up: 18,
@@ -65,7 +65,7 @@ export const reviewStore: Review[] = [
       id: "u3",
       username: "priya_k",
     },
-    rating: 7,
+    rating: 4,
     content: "Just watched it! The ending was unexpected but satisfying.",
     votes: {
       up: 5,
@@ -90,7 +90,7 @@ export const reviewStore: Review[] = [
       id: "u4",
       username: "arjun_m",
     },
-    rating: 6,
+    rating: 3,
     content: "Not my cup of tea. Too slow paced for my liking.",
     votes: {
       up: 2,
@@ -116,7 +116,7 @@ export const reviewStore: Review[] = [
       id: "u5",
       username: "sneha_r",
     },
-    rating: 5,
+    rating: 3,
     content: "I have mixed feelings. Great visuals but the plot was confusing at times. Some scenes dragged on.",
     votes: {
       up: 12,
@@ -141,7 +141,7 @@ export const reviewStore: Review[] = [
       id: "u6",
       username: "vikram_s",
     },
-    rating: 4,
+    rating: 2,
     content: "Overrated in my opinion. Expected more based on the hype.",
     votes: {
       up: 3,

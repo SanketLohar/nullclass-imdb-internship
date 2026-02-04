@@ -12,12 +12,18 @@ export default async function TopRatedPage() {
   if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
     try {
       const { tmdbService } = await import("@/lib/tmdb/tmdb.service");
-      const response = await tmdbService.getTopRatedMovies(1);
+      const responses = await Promise.all([
+        tmdbService.getTopRatedMovies(1),
+        tmdbService.getTopRatedMovies(2),
+        tmdbService.getTopRatedMovies(3),
+      ]);
       const config = await tmdbService.getConfig();
 
-      movies = (response?.results || [])
-        .filter(m => m.poster_path && m.release_date)
-        .slice(0, 20)
+      const allMovies = responses.flatMap(r => r.results);
+      const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.id, m])).values());
+
+      movies = uniqueMovies
+        .filter(m => m.poster_path && m.release_date && m.vote_count > 100)
         .map(movie => ({
           id: movie.id,
           title: movie.title,

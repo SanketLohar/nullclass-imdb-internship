@@ -4,7 +4,7 @@ import { useState, useTransition, useMemo, useEffect } from "react";
 
 import ReviewForm, {
   ReviewSubmitPayload,
-} from "@/components/reviews/ReviewForm";
+} from "@/components/movies/reviews/ReviewForm.client";
 
 import ReviewEditForm from "@/components/reviews/ReviewEditForm.client";
 import ReviewVotes from "@/components/reviews/ReviewVotes.client";
@@ -337,9 +337,9 @@ export default function ReviewsClient({
       {/* Notification Toast */}
       {notification && (
         <div className="fixed bottom-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-5">
-          <div className="flex items-center gap-2 rounded-lg bg-zinc-800 border border-zinc-700 p-4 shadow-xl">
+          <div className="flex items-center gap-2 rounded-lg bg-popover border border-border p-4 shadow-xl">
             <span className="text-xl">🛡️</span>
-            <p className="text-sm font-medium text-white">{notification}</p>
+            <p className="text-sm font-medium text-popover-foreground">{notification}</p>
           </div>
         </div>
       )}

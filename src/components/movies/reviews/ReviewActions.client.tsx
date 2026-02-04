@@ -42,7 +42,7 @@ export default function ReviewActions({
       {onReport && (
         <button
           onClick={onReport}
-          className="text-xs text-neutral-400 hover:text-red-400 transition-colors"
+          className="text-xs font-medium text-muted-foreground hover:text-red-600 transition-colors"
         >
           Report
         </button>

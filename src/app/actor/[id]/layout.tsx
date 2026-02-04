@@ -86,7 +86,7 @@ export default async function ActorLayout({
         biography: tmdbPerson.biography || "No biography available.",
         image: tmdbPerson.profile_path
           ? `${config.images.secure_base_url}w500${tmdbPerson.profile_path}`
-          : "/placeholder-actor.jpg",
+          : "/placeholder-actor.svg",
         coverImage: tmdbPerson.profile_path
           ? `${config.images.secure_base_url}original${tmdbPerson.profile_path}`
           : "/placeholder-backdrop.jpg",
@@ -156,7 +156,7 @@ export default async function ActorLayout({
           {/* Abstract Background (Spotify Style) */}
           <div className="absolute inset-0 overflow-hidden">
             <Image
-              src={actor.image || "/placeholder-actor.jpg"}
+              src={actor.image || "/placeholder-actor.svg"}
               alt={localizedName || actor?.name || "Actor Background"}
               fill
               priority
@@ -171,7 +171,7 @@ export default async function ActorLayout({
           <div className="relative h-full flex items-end pb-8 px-6 z-10">
             <div className="flex gap-8 items-end">
               <Image
-                src={actor.image || "/placeholder-actor.jpg"}
+                src={actor.image || "/placeholder-actor.svg"}
                 alt={localizedName || actor?.name || "Actor Profile"}
                 width={180}
                 height={180}

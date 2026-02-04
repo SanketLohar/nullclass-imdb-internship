@@ -29,9 +29,35 @@ async function getMovies() {
     genre: [],
   });
 
+  // Map basic details first
+  const mappedTrending = trending.results.map(mapMovie);
+  const mappedUpcoming = upcomingMovies.map(mapMovie);
+
+  // Enhance the #1 Trending Movie with a better backdrop (if available)
+  if (mappedTrending.length > 0) {
+    try {
+      const topMovieId = mappedTrending[0].id;
+      const images = await tmdbService.getMovieImages(topMovieId);
+
+      // Try to find a different backdrop than the default one to give variety
+      // We pick the 2nd highly rated one, or just the 2nd one in the list
+      if (images && images.backdrops && images.backdrops.length > 1) {
+        // User rejected index 1 and 2. Trying index 3.
+        const betterBackdrop = images.backdrops[3];
+        if (betterBackdrop) {
+          mappedTrending[0].backdropUrl = `${config.images.secure_base_url}original${betterBackdrop.file_path}`;
+          // Also update 'image' property used by Hero
+          mappedTrending[0].image = `${config.images.secure_base_url}original${betterBackdrop.file_path}`;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch alternative hero image", e);
+    }
+  }
+
   return {
-    trendingMovies: trending.results.map(mapMovie),
-    upcomingMovies: upcomingMovies.map(mapMovie),
+    trendingMovies: mappedTrending,
+    upcomingMovies: mappedUpcoming,
   };
 }
 

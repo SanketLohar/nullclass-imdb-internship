@@ -1,88 +1,104 @@
 "use client";
 
-import { useState } from "react";
-import { useReviews } from "@/_wip/review.context";
+import { useState, useRef } from "react";
+import { nanoid } from "nanoid";
+import Link from "next/link";
 import { useAuth } from "@/_wip/auth/auth.context";
 import StarRatingInput from "./StarRatingInput";
-import { useParams } from "next/navigation";
+import { reviewSchema } from "@/data/reviews/review.schema";
+import type { ReviewInput } from "@/data/reviews/review.schema";
 
-export default function ReviewForm() {
-  const { addReview, hasUserReviewed } = useReviews();
+export type ReviewSubmitPayload = {
+  input: ReviewInput;
+  idempotencyKey: string;
+};
+
+type Props = {
+  movieId: number;
+  action: (payload: ReviewSubmitPayload) => void;
+};
+
+export default function ReviewForm({ movieId, action }: Props) {
   const { user } = useAuth();
-  const params = useParams<{ id: string }>();
-
-  const [rating, setRating] = useState(8);
+  const [rating, setRating] = useState(4);
   const [content, setContent] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const keyRef = useRef(nanoid());
 
   // 🔒 not logged in
   if (!user) {
     return (
-      <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-neutral-400">
-        Please login to write a review.
+      <div className="mt-6 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+        <p>
+          Please <Link href="/login" className="text-yellow-500 hover:underline">login</Link> to write a review.
+        </p>
       </div>
     );
   }
 
-  // 🔐 TS-safe non-null reference
-  const currentUser = user;
+  function handleSubmit() {
+    const input: ReviewInput = {
+      movieId,
+      rating,
+      content,
+    };
 
-  // 🚫 already reviewed
-  if (hasUserReviewed(currentUser.id)) {
-    return (
-      <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-neutral-400">
-        You have already reviewed this movie.
-      </div>
-    );
-  }
+    const parsed = reviewSchema.safeParse(input);
 
-  async function handleSubmit() {
-    if (content.trim().length < 5) {
-      setError("Review must be at least 5 characters.");
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
       return;
     }
 
-    setError("");
+    setError(null);
 
-    await addReview({
-      movieId: params.id,
-      rating,
-      content,
-      author: {
-        id: currentUser.id,
-        name: currentUser.name,
-      },
+    action({
+      input: parsed.data,
+      idempotencyKey: keyRef.current,
     });
 
+    // Reset form
     setContent("");
-    setRating(8);
+    setRating(4);
+    keyRef.current = nanoid();
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
-      <h3 className="mb-3 text-sm font-semibold text-white">
+    <div className="mt-6 rounded-xl border border-border bg-card p-4">
+      <h3 className="mb-3 text-sm font-semibold text-foreground">
         Write a review
       </h3>
 
-      <StarRatingInput value={rating} onChange={setRating} />
+      <div className="mb-4">
+        <label className="block text-xs text-muted-foreground mb-1">
+          Rating
+        </label>
+        <StarRatingInput value={rating} onChange={setRating} />
+      </div>
 
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Share your thoughts about the movie..."
-        className="mt-3 w-full rounded-md bg-black/40 p-3 text-sm text-white outline-none"
-        rows={4}
-      />
+      <div className="mb-4">
+        <label className="block text-xs text-muted-foreground mb-1">
+          Your Review
+        </label>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Share your thoughts about the movie..."
+          className="w-full rounded-md bg-muted p-3 text-sm text-foreground outline-none border border-transparent focus:border-yellow-500/50 transition-colors"
+          rows={4}
+        />
+      </div>
 
       {error && (
-        <p className="mt-2 text-xs text-red-400">
+        <p className="mt-2 text-xs text-red-400 mb-2">
           {error}
         </p>
       )}
 
       <button
         onClick={handleSubmit}
-        className="mt-3 rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-400"
+        className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-black hover:bg-yellow-400 transition-colors"
       >
         Submit Review
       </button>

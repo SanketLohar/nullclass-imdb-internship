@@ -93,7 +93,7 @@ export default function MoviesPage() {
             : "Popular Movies"}
         </h1>
 
-        <button className="flex items-center gap-2 bg-zinc-800 px-4 py-2 rounded-xl hover:bg-zinc-900 transition-colors">
+        <button className="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-xl hover:bg-secondary/80 transition-colors">
           <SlidersHorizontal className="w-5 h-5" />
           Filters
         </button>

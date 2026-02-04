@@ -77,7 +77,7 @@ export default function TrailerCarousel({
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-7xl mx-auto aspect-[16/9] md:aspect-[2.4/1] rounded-xl overflow-hidden bg-zinc-900/50 mb-10 group focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-2xl border border-white/5"
+      className="relative w-full max-w-7xl mx-auto aspect-[16/9] md:aspect-[2.4/1] rounded-xl overflow-hidden bg-card-bg/50 mb-10 group focus:outline-none focus:ring-2 focus:ring-accent shadow-2xl border border-border/50"
       tabIndex={0}
       role="region"
       aria-label="Movie trailers and images carousel"

@@ -27,7 +27,7 @@ export default function ThemeToggle() {
     <div className="relative">
       <motion.button
         onClick={cycleTheme}
-        className="flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors border border-zinc-700 hover:border-zinc-600"
+        className="flex items-center gap-2 px-3 py-2 bg-bg-secondary hover:bg-bg-secondary/80 text-foreground rounded-lg transition-colors border border-border hover:border-text-secondary/50"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Switch theme"

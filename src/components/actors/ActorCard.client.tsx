@@ -27,7 +27,7 @@ export default function ActorCard({ id, name, image, knownFor }: ActorCardProps)
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-                    onError={() => setImgSrc("/placeholder-actor.jpg")}
+                    onError={() => setImgSrc("/placeholder-actor.svg")}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>

@@ -12,13 +12,13 @@ export default function StarRatingInput({
   return (
     <div className="flex gap-1 text-2xl text-yellow-400">
       {Array.from({ length: 5 }).map((_, i) => {
-        const starValue = (i + 1) * 2;
+        const starValue = i + 1;
 
         return (
           <button
             key={i}
             type="button"
-            aria-label={`Rate ${starValue / 2} stars`}
+            aria-label={`Rate ${starValue} stars`}
             onClick={() => onChange(starValue)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {

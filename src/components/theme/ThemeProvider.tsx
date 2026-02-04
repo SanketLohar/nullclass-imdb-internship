@@ -51,7 +51,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.classList.remove("light", "dark", "high-contrast");
 
     // Add current theme class
-    if (theme !== "auto") {
+    if (theme === "high-contrast") {
+      root.classList.add("dark", "high-contrast");
+    } else if (theme !== "auto") {
       root.classList.add(theme);
     } else {
       root.classList.add(resolved);

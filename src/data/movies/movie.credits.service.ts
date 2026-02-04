@@ -27,30 +27,29 @@ export async function getMovieCredits(
             cast: credits.cast.map((member) => ({
               id: String(member.id),
               name: member.name,
-              role:
+              character:
                 member.character ||
                 member.known_for_department ||
                 "Actor",
-              image: member.profile_path
+              profileUrl: member.profile_path
                 ? `${config.images.secure_base_url}w185${member.profile_path}`
-                : "/placeholder-actor.jpg",
+                : "/placeholder-actor.svg",
             })),
 
             crew: (credits.crew ?? []).map((member) => ({
               id: String(member.id),
               name: member.name,
               job: member.job,
-              image: member.profile_path
+              image: member.profile_path // MovieCrew type might not have image, but keeping consistent if needed or remove if unused. Type says no image.
                 ? `${config.images.secure_base_url}w185${member.profile_path}`
-                : "/placeholder-actor.jpg",
+                : "/placeholder-actor.svg",
             })),
           };
         }
       }
     } catch (err) {
-      console.error(
-        "TMDb credits failed → using mock",
-        err
+      console.warn(
+        `TMDb credits failed → using mock (${err instanceof Error ? err.message : "Unknown error"})`
       );
       // Fall through to mock data
     }

@@ -13,7 +13,7 @@ export default async function CastPage({
   const movieId = Number(id);
 
   const movie = await getMovieById(movieId);
-  
+
   if (!movie) {
     return (
       <section>
@@ -24,14 +24,19 @@ export default async function CastPage({
 
   // Fetch credits from TMDb or use movie.cast
   let cast: CastMember[] = movie.cast || [];
-  
+
   try {
     const credits = await getMovieCredits(movieId);
     if (credits?.cast && credits.cast.length > 0) {
-      cast = credits.cast.slice(0, 10); // Top 10 cast members
+      cast = credits.cast.slice(0, 10).map(c => ({
+        id: Number(c.id),
+        name: c.name,
+        role: c.character || "Unknown",
+        image: c.profileUrl || ""
+      }));
     }
   } catch (error) {
-    console.error("Failed to fetch credits:", error);
+    console.warn("Failed to fetch credits (using fallback):", error instanceof Error ? error.message : "Unknown error");
     // Fallback to movie.cast if available
     if (movie.cast && movie.cast.length > 0) {
       cast = movie.cast;
@@ -41,15 +46,15 @@ export default async function CastPage({
   if (cast.length === 0) {
     return (
       <section>
-        <h2 className="text-2xl font-bold mb-6">Top Cast</h2>
-        <p className="text-zinc-400">No cast information available</p>
+        <h2 className="text-2xl font-bold mb-6 text-foreground">Top Cast</h2>
+        <p className="text-muted-foreground">No cast information available</p>
       </section>
     );
   }
 
   return (
-    <section>
-      <h2 className="text-2xl font-bold mb-6">
+    <section className="pt-16 relative">
+      <h2 className="text-2xl font-bold mb-6 text-foreground">
         Top Cast
       </h2>
 
@@ -58,10 +63,10 @@ export default async function CastPage({
           <Link
             key={actor.id}
             href={`/actor/${actor.id}`}
-            className="bg-zinc-800/60 rounded-lg p-4 flex gap-4 hover:bg-zinc-700/60 transition"
+            className="bg-card border border-border rounded-lg p-4 flex gap-4 hover:bg-secondary/50 transition"
           >
             <Image
-              src={actor.image || "/placeholder-actor.jpg"}
+              src={actor.image || "/placeholder-actor.svg"}
               alt={actor.name}
               width={80}
               height={80}
@@ -69,10 +74,10 @@ export default async function CastPage({
             />
 
             <div>
-              <h3 className="font-semibold">
+              <h3 className="font-semibold text-foreground">
                 {actor.name}
               </h3>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-foreground">
                 {actor.role}
               </p>
             </div>

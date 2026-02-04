@@ -16,7 +16,7 @@ export default async function OverviewPage({
   if (!movie) {
     return (
       <section>
-        <p className="text-zinc-400">Movie not found</p>
+        <p className="text-muted-foreground">Movie not found</p>
       </section>
     );
   }
@@ -60,7 +60,7 @@ export default async function OverviewPage({
         Overview
       </h2>
 
-      <p className="text-zinc-300 leading-relaxed mb-8">
+      <p className="text-muted-foreground leading-relaxed mb-8">
         {movie.title} ({movie.releaseYear}) is rated ⭐{" "}
         {movie.rating}/10.
         <br />
@@ -69,18 +69,18 @@ export default async function OverviewPage({
 
       {(trailers.length > 0 ||
         images.length > 0) && (
-        <Suspense
-          fallback={
-            <div className="h-64 bg-zinc-900/60 rounded-lg animate-pulse" />
-          }
-        >
-          <TrailerCarousel
-  trailers={trailers}
-  images={images}
-/>
+          <Suspense
+            fallback={
+              <div className="h-64 bg-muted/60 rounded-lg animate-pulse" />
+            }
+          >
+            <TrailerCarousel
+              trailers={trailers}
+              images={images}
+            />
 
-        </Suspense>
-      )}
+          </Suspense>
+        )}
     </section>
   );
 }

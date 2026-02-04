@@ -39,7 +39,7 @@ export function AuthProvider({
     const mockUser: User = {
       id: "user-moviedb-user",
       name: "MovieDB_User",
-      username: "user",
+      username: "MovieDB_User",
     };
 
     localStorage.setItem(

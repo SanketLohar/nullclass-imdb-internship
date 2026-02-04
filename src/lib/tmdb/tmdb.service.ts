@@ -32,6 +32,7 @@ interface TMDBMovie {
   tagline?: string | null;
   status?: string;
   genres?: { id: number; name: string }[];
+  popularity?: number;
 }
 
 interface TMDBResponse<T> {
@@ -86,7 +87,12 @@ class TMDBService {
 
   private getMockData<T>(endpoint: string): T {
     // Return empty/mock data as fallback
-    if (endpoint.includes("/search")) {
+    if (
+      endpoint.includes("/search") ||
+      endpoint.includes("/movie/popular") ||
+      endpoint.includes("/movie/top_rated") ||
+      endpoint.includes("/movie/upcoming")
+    ) {
       return { results: [], page: 1, total_pages: 0, total_results: 0 } as T;
     }
     return {} as T;
@@ -111,7 +117,11 @@ class TMDBService {
         page: page.toString(),
       })
     );
-    data.results = data.results.filter(this.isValidMovie);
+    if (data && data.results) {
+      data.results = data.results.filter(this.isValidMovie);
+    } else {
+      return { results: [], page: 1, total_pages: 0, total_results: 0 };
+    }
     return data;
   }
 
@@ -134,7 +144,11 @@ class TMDBService {
         page: page.toString(),
       })
     );
-    data.results = data.results.filter(this.isValidMovie);
+    if (data && data.results) {
+      data.results = data.results.filter(this.isValidMovie);
+    } else {
+      return { results: [], page: 1, total_pages: 0, total_results: 0 };
+    }
     return data;
   }
 
@@ -145,7 +159,11 @@ class TMDBService {
         page: page.toString(),
       })
     );
-    data.results = data.results.filter(this.isValidMovie);
+    if (data && data.results) {
+      data.results = data.results.filter(this.isValidMovie);
+    } else {
+      return { results: [], page: 1, total_pages: 0, total_results: 0 };
+    }
     return data;
   }
 
@@ -156,7 +174,11 @@ class TMDBService {
         page: page.toString(),
       })
     );
-    data.results = data.results.filter(this.isValidMovie);
+    if (data && data.results) {
+      data.results = data.results.filter(this.isValidMovie);
+    } else {
+      return { results: [], page: 1, total_pages: 0, total_results: 0 };
+    }
     return data;
   }
 
@@ -235,22 +257,64 @@ class TMDBService {
   }
 
   async getComingSoonMovies(): Promise<TMDBMovie[]> {
-    // Fetch first 3 pages to find enough 2026+ movies
-    const pages = [1, 2, 3];
-    const results = await Promise.all(
-      pages.map(page => this.request<TMDBResponse<TMDBMovie>>("/movie/upcoming", { page: page.toString() }))
+    // 1. Fetch Global Blockbusters for March 2026+
+    const globalPages = [1, 2, 3];
+    const globalPromise = Promise.all(
+      globalPages.map((page) =>
+        this.request<TMDBResponse<TMDBMovie>>("/discover/movie", {
+          page: page.toString(),
+          "primary_release_date.gte": "2026-03-01",
+          sort_by: "popularity.desc",
+          "vote_count.gte": "0", // Include unreleased with anticipation
+        }).catch(() => ({ results: [], page: 1, total_pages: 0, total_results: 0 } as TMDBResponse<TMDBMovie>))
+      )
     );
 
-    const allMovies = results.flatMap(r => r.results);
-    const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.id, m])).values());
+    // 2. Fetch specific Indian Blockbusters for March 2026+
+    const indianPages = [1, 2]; // Fetch a few pages of Indian content
+    const indianPromise = Promise.all(
+      indianPages.map((page) =>
+        this.request<TMDBResponse<TMDBMovie>>("/discover/movie", {
+          page: page.toString(),
+          "primary_release_date.gte": "2026-03-01",
+          with_origin_country: "IN",
+          sort_by: "popularity.desc",
+        }).catch(() => ({ results: [], page: 1, total_pages: 0, total_results: 0 } as TMDBResponse<TMDBMovie>))
+      )
+    );
 
-    // Filter for 2026+ AND Valid
-    return uniqueMovies.filter(m => {
-      if (!this.isValidMovie(m)) return false; // Use strict validation
-      if (!m.release_date) return false;
-      const year = new Date(m.release_date).getFullYear();
-      return year >= 2026;
+    const [globalResults, indianResults] = await Promise.all([globalPromise, indianPromise]);
+
+    const allMovies = [
+      ...globalResults.flatMap((r) => r.results),
+      ...indianResults.flatMap((r) => r.results),
+    ].filter((r) => r && r.id); // Basic filter
+
+    // Deduplicate by ID
+    const uniqueMovies = Array.from(new Map(allMovies.map((m) => [m.id, m])).values());
+
+    // Strict Validation
+    const validMovies = uniqueMovies.filter((m) => {
+      // Basic validity
+      if (!m.title || m.title.trim().length === 0) return false;
+      if (!m.id) return false;
+      if ((m as any).adult) return false;
+
+      // Ensure it is actually March 2026+
+      if (m.release_date) {
+        const releaseDate = new Date(m.release_date);
+        const cutoffDate = new Date("2026-03-01");
+        if (releaseDate < cutoffDate) return false;
+      }
+
+      // STRICTLY REQUIRE POSTER (User Request)
+      if (!m.poster_path) return false;
+
+      return true;
     });
+
+    // Sort by popularity but prioritize those with release dates? Just simple popularity sort.
+    return validMovies.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
   }
 
   async getPopularActors(page = 1): Promise<TMDBResponse<any>> {
@@ -296,11 +360,11 @@ class TMDBService {
           name: c.name,
           image: c.profile_path
             ? `https://image.tmdb.org/t/p/w780${c.profile_path}`
-            : "/placeholder-actor.jpg",
+            : "/placeholder-actor.svg",
           role: `Co-star in ${topMovie.title}`
         }));
     } catch (e) {
-      console.error("Error fetching similar actors:", e);
+      console.warn("Error fetching similar actors:", e instanceof Error ? e.message : "Unknown error");
       return [];
     }
   }
@@ -363,7 +427,7 @@ export async function getComingSoonMovies() {
       genre: [] // Add genre mapping if needed or leave empty
     }));
   } catch (error) {
-    console.error("Failed to get coming soon movies", error);
+    console.warn("Failed to get coming soon movies (using fallback)", error instanceof Error ? error.message : "Unknown error");
     return [];
   }
 }

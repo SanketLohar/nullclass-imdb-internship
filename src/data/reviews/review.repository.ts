@@ -96,22 +96,29 @@ export async function createReview({
 
   let review: Review;
 
-  // If existing review was deleted, restore it; otherwise create new
+  // If existing review was deleted, effectively "overwrite" it with a fresh start
   if (existing && existing.deletedAt) {
     review = {
-      ...existing,
+      id: existing.id, // Reuse ID or generate new, reuse is fine if we reset everything
+      movieId,
+      author,
       rating,
       content,
-      deletedAt: null, // Restore deleted review
-      updatedAt: now,
-      revisions: [
-        {
-          id: nanoid(),
-          previousContent: existing.content,
-          editedAt: now,
-        },
-        ...existing.revisions,
-      ],
+
+      votes: { up: 0, down: 0, userVotes: {} }, // Reset votes
+      score: 0,
+
+      moderation: {
+        isFlagged: abusive,
+        flagsCount: abusive ? 1 : 0,
+        reasons: abusive ? ["Profanity detected"] : [],
+        hiddenReason: abusive ? "Inappropriate language" : undefined,
+      },
+
+      revisions: [], // Clear history
+      createdAt: now, // Reset timestamp to now
+      updatedAt: null, // Not edited
+      deletedAt: null, // Not deleted
     };
   } else {
     review = {
