@@ -3,6 +3,7 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import PrefetchLink from "@/components/movies/PrefetchLink.client";
 import { FilmographyItem } from "@/data/actors.types";
 import { motion } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -228,7 +229,7 @@ function FilmographyCard({ item }: { item: FilmographyItem }) {
   const [imgSrc, setImgSrc] = useState(item.poster || "/placeholder-movie.jpg");
 
   return (
-    <Link href={`/movies/${item.id}`} className="block h-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded-xl" prefetch={false}>
+    <PrefetchLink movieId={item.id} className="block h-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded-xl">
       <motion.div
         whileHover={{ y: -5 }}
         className="group h-full flex flex-col bg-zinc-900 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-black/50 transition-all"
@@ -274,6 +275,6 @@ function FilmographyCard({ item }: { item: FilmographyItem }) {
           </div>
         </div>
       </motion.div>
-    </Link>
+    </PrefetchLink>
   );
 }

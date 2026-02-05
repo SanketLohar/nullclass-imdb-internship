@@ -67,7 +67,7 @@ export default function Hero({ movies = [] }: HeroProps) {
   };
 
   return (
-    <div className="relative h-[90vh]">
+    <div className="relative min-h-[65vh] md:min-h-[90vh] flex items-center">
       {trailerKey && (
         <TrailerPlayer
           videoKey={trailerKey}
@@ -83,9 +83,9 @@ export default function Hero({ movies = [] }: HeroProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
+      <div className="relative z-10 container mx-auto px-4 w-full pt-20 md:pt-0">
         <div className="max-w-2xl text-white">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+          <h1 className="text-3xl md:text-6xl font-bold mb-4 drop-shadow-lg leading-tight">
             {movie.title}
           </h1>
 
@@ -94,15 +94,15 @@ export default function Hero({ movies = [] }: HeroProps) {
             <span className="text-xl font-bold">{movie.rating.toFixed(1)}</span>
           </div>
 
-          <p className="mb-6 text-white/90 text-lg line-clamp-3 drop-shadow-md">
+          <p className="mb-6 text-white/90 text-base md:text-lg line-clamp-3 drop-shadow-md">
             {movie.description}
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={handleWatchTrailer}
               disabled={isLoadingTrailer}
-              className="bg-yellow-500 text-black px-6 py-3 rounded-xl font-semibold hover:bg-yellow-400 transition-colors flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="bg-yellow-500 text-black px-6 py-3 rounded-xl font-semibold hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto"
             >
               {isLoadingTrailer ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -114,7 +114,7 @@ export default function Hero({ movies = [] }: HeroProps) {
 
             <Link
               href={`/movies/${movie.id}`}
-              className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-xl hover:bg-white/20 transition-colors font-medium"
+              className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-xl hover:bg-white/20 transition-colors font-medium text-center w-full sm:w-auto"
             >
               More Info
             </Link>

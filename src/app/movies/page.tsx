@@ -2,6 +2,7 @@
 
 import { SlidersHorizontal, Star } from "lucide-react";
 import Link from "next/link";
+import PrefetchLink from "@/components/movies/PrefetchLink.client";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
@@ -109,9 +110,9 @@ function MoviesContent() {
         /* Grid */
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {movies.map((movie) => (
-            <Link
+            <PrefetchLink
               key={movie.id}
-              href={`/movies/${movie.id}`}
+              movieId={movie.id}
               className="block"
             >
               <MovieCard
@@ -122,7 +123,7 @@ function MoviesContent() {
                 year={movie.year}
                 genre={movie.genre}
               />
-            </Link>
+            </PrefetchLink>
           ))}
         </div>
       )}

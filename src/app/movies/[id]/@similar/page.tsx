@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import PrefetchLink from "@/components/movies/PrefetchLink.client";
 import { getMovieById } from "@/data/movies/movie.service";
 import { getSimilarMovies } from "@/data/movies/movie.service";
 
@@ -55,10 +56,10 @@ export default async function SimilarMoviesPage({
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {similarMovies.slice(0, 8).map((movie) => (
-          <Link
+          <PrefetchLink
             key={movie.id}
-            href={`/movies/${movie.id}`}
-            className="bg-zinc-900 rounded-xl overflow-hidden hover:scale-[1.03] transition"
+            movieId={movie.id}
+            className="bg-zinc-900 rounded-xl overflow-hidden hover:scale-[1.03] transition block"
           >
             <Image
               src={movie.posterUrl || "/placeholder-movie.jpg"}
@@ -76,7 +77,7 @@ export default async function SimilarMoviesPage({
                 ⭐ {movie.rating?.toFixed(1) || "N/A"}
               </p>
             </div>
-          </Link>
+          </PrefetchLink>
         ))}
       </div>
     </section>

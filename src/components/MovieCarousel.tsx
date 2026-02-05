@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
 import Link from "next/link";
+import PrefetchLink from "@/components/movies/PrefetchLink.client";
 import MovieCard from "./MovieCard";
 
 type Movie = {
@@ -62,9 +63,9 @@ export default function MovieCarousel({
             key={movie.id}
             className="flex-none w-[160px] sm:w-[200px] md:w-[240px] snap-start"
           >
-            <Link href={`/movies/${movie.id}`} className="block h-full">
+            <PrefetchLink movieId={movie.id} className="block h-full">
               <MovieCard {...movie} />
-            </Link>
+            </PrefetchLink>
           </div>
         ))}
       </div>
