@@ -12,6 +12,7 @@ import { containsProfanity } from "@/lib/moderation/profanity";
 import { emitReviewEvent } from "./review.events";
 import { queueOperationForSync } from "@/lib/watchlist/service-worker";
 import { createVectorClock } from "../watchlist/watchlist.conflict"; // Reuse/Warning: Review doesn't have vector clock in types yet, I'll skip VC for review sync as it was not strictly required by audit to have conflict res, just background sync. I'll just send deviceId.
+import { calculateWilsonScore } from "@/lib/reviews/wilsonScore";
 
 function getDeviceId() {
   if (typeof window === "undefined") return "server";
@@ -41,7 +42,7 @@ export async function getReviewsByMovie(
     // Combine mock + seeded
     return [...seededReviews, ...mockReviews]
       .filter((r) => !r.deletedAt)
-      .sort((a, b) => b.createdAt - a.createdAt);
+      .sort((a, b) => b.wilsonScore - a.wilsonScore || b.createdAt - a.createdAt);
   }
 
   const dbReviews = await getReviewsByMovieDB(movieId);
@@ -72,7 +73,7 @@ export async function getReviewsByMovie(
         // Filter out legacy demo_user reviews from regression
         r.author.username !== 'demo_user'
     )
-    .sort((a, b) => b.createdAt - a.createdAt);
+    .sort((a, b) => b.wilsonScore - a.wilsonScore || b.createdAt - a.createdAt);
 }
 
 /* ------------------------------------
@@ -119,6 +120,7 @@ export async function createReview({
 
       votes: { up: 0, down: 0, userVotes: {} }, // Reset votes
       score: 0,
+      wilsonScore: 0,
 
       moderation: {
         isFlagged: abusive,
@@ -142,6 +144,7 @@ export async function createReview({
 
       votes: { up: 0, down: 0, userVotes: {} },
       score: 0,
+      wilsonScore: 0,
 
       moderation: {
         isFlagged: abusive,
@@ -343,7 +346,36 @@ export async function voteReview(
   }
 
   const db = await getReviewDB();
-  const review = await db.get(REVIEW_STORE, reviewId);
+  let review = await db.get(REVIEW_STORE, reviewId);
+
+  // If not in DB, check if it's a seeded review
+  if (!review) {
+    if (reviewId.startsWith("seed-")) {
+      const parts = reviewId.split("-");
+      // Format: seed-{type}-{movieId}
+      // parts could be ['seed', 'recent', '123']
+      const movieIdStr = parts[parts.length - 1];
+      const movieId = parseInt(movieIdStr, 10);
+
+      if (!isNaN(movieId)) {
+        const { getSeededReviews } = await import("./review.seed");
+        const seeded = getSeededReviews(movieId);
+        const found = seeded.find((r) => r.id === reviewId);
+
+        if (found) {
+          // Persist the seeded review to DB so we can vote on it
+          // We need to clone it to avoid mutating the seed define reference (though getSeededReviews returns fresh objects usually)
+          review = { ...found };
+          // Initialize userVotes if missing (seeded ones usually empty)
+          if (!review.votes.userVotes) {
+            review.votes.userVotes = {};
+          }
+          // Save to DB immediately
+          await saveReviewDB(review);
+        }
+      }
+    }
+  }
 
   if (!review) {
     throw new Error("Review not found");
@@ -358,7 +390,7 @@ export async function voteReview(
   const existingVote = review.votes.userVotes[userId];
 
   if (existingVote) {
-    // User already voted - allow changing vote
+    // User already voted
     if (existingVote === type) {
       // Same vote - do nothing (or could remove vote)
       return review;
@@ -374,9 +406,10 @@ export async function voteReview(
     review.votes.userVotes[userId] = type;
   }
 
-  // Recalculate score
+  // Recalculate scores
   const total = review.votes.up + review.votes.down;
   review.score = total === 0 ? 0 : review.votes.up / total;
+  review.wilsonScore = calculateWilsonScore(review.votes.up, review.votes.down);
 
   await saveReviewDB(review);
 
@@ -384,6 +417,13 @@ export async function voteReview(
     type: "update",
     movieId: review.movieId,
     review,
+  });
+
+  queueOperationForSync({
+    type: "REVIEW_UPDATE",
+    item: review,
+    deviceId: getDeviceId(),
+    vectorClock: {}
   });
 
   if (typeof window !== "undefined") {

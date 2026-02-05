@@ -35,6 +35,7 @@ export type Review = {
 
   votes: ReviewVotes;
   score: number;
+  wilsonScore: number;
 
   moderation: ReviewModeration;
 

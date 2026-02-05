@@ -9,7 +9,7 @@ export default function ReviewList() {
   const { reviews } = useReviews();
 
   const [deletedId, setDeletedId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"recent" | "rating">("recent");
+  const [sortBy, setSortBy] = useState<"helpful" | "recent" | "rating">("helpful");
 
   // listen for delete event
   useEffect(() => {
@@ -31,6 +31,9 @@ export default function ReviewList() {
     if (sortBy === "rating") {
       return b.rating - a.rating;
     }
+    if (sortBy === "helpful") {
+      return (b.wilsonScore || 0) - (a.wilsonScore || 0) || b.createdAt - a.createdAt;
+    }
     return b.createdAt - a.createdAt;
   });
 
@@ -45,35 +48,49 @@ export default function ReviewList() {
   return (
     <>
       {/* Sort controls */}
-      <div className="mb-4 flex items-center gap-3 text-sm">
-        <span className="text-neutral-400">Sort by:</span>
+      <div className="mb-6 flex items-center justify-between border-b border-white/5 pb-4">
+        <h3 className="text-lg font-semibold text-foreground">Reviews <span className="text-muted-foreground text-sm font-normal ml-2">({visibleReviews.length})</span></h3>
 
-        <button
-          onClick={() => setSortBy("recent")}
-          className={
-            sortBy === "recent"
-              ? "text-white underline"
-              : "text-neutral-400"
-          }
-        >
-          Recent
-        </button>
+        <div className="flex items-center gap-2 text-sm bg-white/5 p-1 rounded-lg border border-white/5">
+          <button
+            onClick={() => setSortBy("helpful")}
+            className={`px-3 py-1.5 rounded-md transition-all ${sortBy === "helpful"
+              ? "bg-yellow-400 text-black font-medium shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              }`}
+          >
+            Most Helpful
+          </button>
 
-        <button
-          onClick={() => setSortBy("rating")}
-          className={
-            sortBy === "rating"
-              ? "text-white underline"
-              : "text-neutral-400"
-          }
-        >
-          Rating
-        </button>
+          <button
+            onClick={() => setSortBy("recent")}
+            className={`px-3 py-1.5 rounded-md transition-all ${sortBy === "recent"
+              ? "bg-yellow-400 text-black font-medium shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              }`}
+          >
+            Recent
+          </button>
+
+          <button
+            onClick={() => setSortBy("rating")}
+            className={`px-3 py-1.5 rounded-md transition-all ${sortBy === "rating"
+              ? "bg-yellow-400 text-black font-medium shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              }`}
+          >
+            Rating
+          </button>
+        </div>
       </div>
 
       <section className="space-y-4">
-        {sortedReviews.map((review) => (
-          <ReviewItem key={review.id} review={review} />
+        {sortedReviews.map((review, index) => (
+          <ReviewItem
+            key={review.id}
+            review={review}
+            isMostHelpful={sortBy === "helpful" && index === 0 && (review.wilsonScore || 0) > 0}
+          />
         ))}
       </section>
 
