@@ -1,0 +1,539 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "MovieDB" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e6]
+        - generic [ref=e8]: MovieDB
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - img [ref=e11]
+          - textbox "Search movies..." [ref=e14]
+        - generic [ref=e15]:
+          - link "Movies" [ref=e16] [cursor=pointer]:
+            - /url: /movies
+          - link "Top Rated" [ref=e17] [cursor=pointer]:
+            - /url: /top-rated
+          - link "Coming Soon" [ref=e18] [cursor=pointer]:
+            - /url: /coming-soon
+          - link "Actors" [ref=e19] [cursor=pointer]:
+            - /url: /actors
+          - link "Watchlist" [ref=e20] [cursor=pointer]:
+            - /url: /watchlist
+          - button "Login" [ref=e21]:
+            - img [ref=e22]
+            - text: Login
+          - button "Switch theme" [ref=e26]:
+            - img [ref=e29]
+            - generic [ref=e31]: Auto
+  - button "Go back" [ref=e33]:
+    - img [ref=e34]
+  - generic [ref=e36]:
+    - generic [ref=e37]:
+      - img "George Lucas" [ref=e39]
+      - generic [ref=e42]:
+        - img "George Lucas" [ref=e43]
+        - heading "George Lucas" [level=1] [ref=e45]
+    - generic [ref=e46]:
+      - generic [ref=e47]:
+        - heading "Biography" [level=2] [ref=e48]
+        - paragraph [ref=e49]: "George Walton Lucas Jr. (born May 14, 1944) is an American filmmaker and entrepreneur. Lucas is known for creating the Star Wars and Indiana Jones franchises and founding Lucasfilm, LucasArts and Industrial Light & Magic. He served as chairman of Lucasfilm before selling it to The Walt Disney Company in 2012. After graduating from the University of Southern California in 1967, Lucas co-founded American Zoetrope with filmmaker Francis Ford Coppola. Lucas wrote and directed THX 1138 (1971), based on his earlier student short Electronic Labyrinth: THX 1138 4EB, which was a critical success but a financial failure. His next work as a writer-director was the film American Graffiti (1973), inspired by his youth in early 1960s Modesto, California, and produced through the newly founded Lucasfilm. The film was critically and commercially successful, and received five Academy Award nominations including Best Picture. Lucas's next film, the epic space opera Star Wars (1977), had a troubled production but was a surprise hit, becoming the highest-grossing film at the time, winning six Academy Awards and sparking a cultural phenomenon. Lucas produced and co-wrote the sequels The Empire Strikes Back (1980) and Return of the Jedi (1983). With director Steven Spielberg, he created, produced and co-wrote the Indiana Jones films Raiders of the Lost Ark (1981), Temple of Doom (1984), The Last Crusade (1989) and Kingdom of the Crystal Skull (2008). He also produced and wrote a variety of films and television series through Lucasfilm between the 1970s and the 2010s. In 1997, Lucas rereleased the Star Wars trilogy as part of a special edition featuring several alterations; home media versions with further changes were released in 2004 and 2011. He returned to directing with a Star Wars prequel trilogy comprising The Phantom Menace (1999), Attack of the Clones (2002), and Revenge of the Sith (2005). He last collaborated on the CGI-animated television series Star Wars: The Clone Wars (2008–2014, 2020), the war film Red Tails (2012), and the CGI film Strange Magic (2015). Lucas is one of history's most financially successful filmmakers and has been nominated for four Academy Awards. His films are among the 100 highest-grossing movies at the North American box office, adjusted for ticket-price inflation. Lucas is considered a significant figure of the 20th-century New Hollywood movement. Description above from the Wikipedia article George Lucas, licensed under CC-BY-SA, full list of contributors on Wikipedia."
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - img [ref=e53]
+          - heading "Awards & Nominations" [level=2] [ref=e59]
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - heading "Academy Awards" [level=3] [ref=e62]
+            - list [ref=e63]:
+              - listitem [ref=e64]:
+                - generic [ref=e65]:
+                  - text: Nominee
+                  - paragraph [ref=e66]: "for Star Wars: Episode III - Revenge of the Sith"
+                - generic [ref=e67]:
+                  - generic [ref=e68]: "2005"
+                  - generic [ref=e69]: NOMINEE
+              - listitem [ref=e70]:
+                - generic [ref=e71]:
+                  - text: Winner
+                  - paragraph [ref=e72]: for Men in Black
+                - generic [ref=e73]:
+                  - generic [ref=e74]: "1997"
+                  - generic [ref=e75]:
+                    - img [ref=e76]
+                    - text: WINNER
+              - listitem [ref=e82]:
+                - generic [ref=e83]:
+                  - text: Nominee
+                  - paragraph [ref=e84]: for Hook
+                - generic [ref=e85]:
+                  - generic [ref=e86]: "1991"
+                  - generic [ref=e87]: NOMINEE
+              - listitem [ref=e88]:
+                - generic [ref=e89]:
+                  - text: Winner
+                  - paragraph [ref=e90]: for Indiana Jones and the Temple of Doom
+                - generic [ref=e91]:
+                  - generic [ref=e92]: "1984"
+                  - generic [ref=e93]:
+                    - img [ref=e94]
+                    - text: WINNER
+          - generic [ref=e100]:
+            - heading "Award Nominations" [level=3] [ref=e101]
+            - list [ref=e102]:
+              - listitem [ref=e103]:
+                - generic [ref=e104]:
+                  - text: 0 Wins, 3 Nominations
+                  - paragraph [ref=e105]: for Beverly Hills Cop III
+                - generic [ref=e106]:
+                  - generic [ref=e107]: "1994"
+                  - generic [ref=e108]: NOMINEE
+      - generic [ref=e109]:
+        - heading "Social" [level=2] [ref=e110]
+        - link "IMDb" [ref=e112] [cursor=pointer]:
+          - /url: https://www.imdb.com/name/nm0000184/
+          - img [ref=e113]
+          - text: IMDb
+    - generic [ref=e117]:
+      - heading "Filmography" [level=2] [ref=e118]
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]: "Year:"
+            - combobox "Filter by Year" [ref=e123]:
+              - option "All Years" [selected]
+              - option "2025"
+              - option "2024"
+              - option "2023"
+              - option "2022"
+              - option "2021"
+              - option "2019"
+              - option "2017"
+              - option "2015"
+              - option "2014"
+              - option "2013"
+              - option "2012"
+              - option "2011"
+              - option "2010"
+              - option "2009"
+              - option "2008"
+              - option "2007"
+              - option "2006"
+              - option "2005"
+              - option "2004"
+              - option "2003"
+              - option "2002"
+              - option "2001"
+              - option "1999"
+              - option "1998"
+              - option "1997"
+              - option "1996"
+              - option "1995"
+              - option "1994"
+              - option "1993"
+              - option "1992"
+              - option "1991"
+              - option "1990"
+              - option "1988"
+              - option "1987"
+              - option "1986"
+              - option "1984"
+              - option "1983"
+              - option "1981"
+              - option "1980"
+              - option "1977"
+              - option "1973"
+              - option "1971"
+              - option "1968"
+          - generic [ref=e124]:
+            - generic [ref=e125]: "Role:"
+            - combobox "Filter by Role" [ref=e126]:
+              - option "All Roles" [selected]
+              - option "Self"
+              - option "Self (archive footage)"
+              - option "Self - Filmmaker"
+              - option "Self (archive footage) (uncredited)"
+              - option "self"
+              - option "Self - Filmmaker (archive footage)"
+              - option "Self - Filmmaker / Founder, ILM"
+              - option "Self - Executive Producer (archive footage)"
+              - option "Self (voice)"
+              - option "Baron Papanoida (uncredited)"
+              - option "Alien on TV Monitor (uncredited)"
+              - option "Disappointed Man"
+              - option "Man Kissing on Bridge (uncredited)"
+              - option "Self - Executive Producer"
+              - option "Missionary (uncredited)"
+              - option "Pinkie’s Pizza Employee (voice) (uncredited)"
+              - option "Self (voice) (uncredited)"
+          - generic [ref=e127]:
+            - generic [ref=e128]: "Genre:"
+            - combobox "Filter by Genre" [ref=e129]:
+              - option "All Genres" [selected]
+              - option "Drama"
+          - generic [ref=e130]: Showing 111 of 111 films
+        - generic [ref=e132]:
+          - generic [ref=e133]:
+            - 'link "Jaws @ 50: The Definitive Inside Story ★ 7.4 Jaws @ 50: The Definitive Inside Story Self 2025" [ref=e134] [cursor=pointer]':
+              - /url: /movies/1308619
+              - generic [ref=e135]:
+                - generic [ref=e136]:
+                  - 'img "Jaws @ 50: The Definitive Inside Story" [ref=e137]'
+                  - generic [ref=e138]:
+                    - generic [ref=e139]: ★
+                    - text: "7.4"
+                - generic [ref=e140]:
+                  - 'heading "Jaws @ 50: The Definitive Inside Story" [level=3] [ref=e141]'
+                  - generic [ref=e142]:
+                    - paragraph [ref=e143]: Self
+                    - paragraph [ref=e144]: "2025"
+            - link "Megadoc ★ 6.9 Megadoc Self 2025" [ref=e145] [cursor=pointer]:
+              - /url: /movies/1290369
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - img "Megadoc" [ref=e148]
+                  - generic [ref=e149]:
+                    - generic [ref=e150]: ★
+                    - text: "6.9"
+                - generic [ref=e151]:
+                  - heading "Megadoc" [level=3] [ref=e152]
+                  - generic [ref=e153]:
+                    - paragraph [ref=e154]: Self
+                    - paragraph [ref=e155]: "2025"
+            - 'link "The Happiest Story on Earth: 70 Years of Disneyland ★ N/A The Happiest Story on Earth: 70 Years of Disneyland Self 2025" [ref=e156] [cursor=pointer]':
+              - /url: /movies/1560112
+              - generic [ref=e157]:
+                - generic [ref=e158]:
+                  - 'img "The Happiest Story on Earth: 70 Years of Disneyland" [ref=e159]'
+                  - generic [ref=e160]:
+                    - generic [ref=e161]: ★
+                    - text: N/A
+                - generic [ref=e162]:
+                  - 'heading "The Happiest Story on Earth: 70 Years of Disneyland" [level=3] [ref=e163]'
+                  - generic [ref=e164]:
+                    - paragraph [ref=e165]: Self
+                    - paragraph [ref=e166]: "2025"
+            - link "Martin Scorsese, the Italian-American Master ★ 8.1 Martin Scorsese, the Italian-American Master Self 2024" [ref=e167] [cursor=pointer]:
+              - /url: /movies/1215289
+              - generic [ref=e168]:
+                - generic [ref=e169]:
+                  - img "Martin Scorsese, the Italian-American Master" [ref=e170]
+                  - generic [ref=e171]:
+                    - generic [ref=e172]: ★
+                    - text: "8.1"
+                - generic [ref=e173]:
+                  - heading "Martin Scorsese, the Italian-American Master" [level=3] [ref=e174]
+                  - generic [ref=e175]:
+                    - paragraph [ref=e176]: Self
+                    - paragraph [ref=e177]: "2024"
+            - link "Jim Henson Idea Man ★ 7.8 Jim Henson Idea Man Self (archive footage) 2024" [ref=e178] [cursor=pointer]:
+              - /url: /movies/1273196
+              - generic [ref=e179]:
+                - generic [ref=e180]:
+                  - img "Jim Henson Idea Man" [ref=e181]
+                  - generic [ref=e182]:
+                    - generic [ref=e183]: ★
+                    - text: "7.8"
+                - generic [ref=e184]:
+                  - heading "Jim Henson Idea Man" [level=3] [ref=e185]
+                  - generic [ref=e186]:
+                    - paragraph [ref=e187]: Self (archive footage)
+                    - paragraph [ref=e188]: "2024"
+          - generic [ref=e189]:
+            - link "Music by John Williams ★ 8.1 Music by John Williams Self - Filmmaker 2024" [ref=e190] [cursor=pointer]:
+              - /url: /movies/1076708
+              - generic [ref=e191]:
+                - generic [ref=e192]:
+                  - img "Music by John Williams" [ref=e193]
+                  - generic [ref=e194]:
+                    - generic [ref=e195]: ★
+                    - text: "8.1"
+                - generic [ref=e196]:
+                  - heading "Music by John Williams" [level=3] [ref=e197]
+                  - generic [ref=e198]:
+                    - paragraph [ref=e199]: Self - Filmmaker
+                    - paragraph [ref=e200]: "2024"
+            - 'link "Harrison Ford: Hollywood Hero ★ 8.0 Harrison Ford: Hollywood Hero Self 2023" [ref=e201] [cursor=pointer]':
+              - /url: /movies/1357745
+              - generic [ref=e202]:
+                - generic [ref=e203]:
+                  - 'img "Harrison Ford: Hollywood Hero" [ref=e204]'
+                  - generic [ref=e205]:
+                    - generic [ref=e206]: ★
+                    - text: "8.0"
+                - generic [ref=e207]:
+                  - 'heading "Harrison Ford: Hollywood Hero" [level=3] [ref=e208]'
+                  - generic [ref=e209]:
+                    - paragraph [ref=e210]: Self
+                    - paragraph [ref=e211]: "2023"
+            - 'link "Timeless Heroes: Indiana Jones and Harrison Ford ★ 7.7 Timeless Heroes: Indiana Jones and Harrison Ford Self 2023" [ref=e212] [cursor=pointer]':
+              - /url: /movies/1199447
+              - generic [ref=e213]:
+                - generic [ref=e214]:
+                  - 'img "Timeless Heroes: Indiana Jones and Harrison Ford" [ref=e215]'
+                  - generic [ref=e216]:
+                    - generic [ref=e217]: ★
+                    - text: "7.7"
+                - generic [ref=e218]:
+                  - 'heading "Timeless Heroes: Indiana Jones and Harrison Ford" [level=3] [ref=e219]'
+                  - generic [ref=e220]:
+                    - paragraph [ref=e221]: Self
+                    - paragraph [ref=e222]: "2023"
+            - 'link "Willow: Behind the Magic ★ 4.1 Willow: Behind the Magic Self (archive footage) (uncredited) 2023" [ref=e223] [cursor=pointer]':
+              - /url: /movies/1076366
+              - generic [ref=e224]:
+                - generic [ref=e225]:
+                  - 'img "Willow: Behind the Magic" [ref=e226]'
+                  - generic [ref=e227]:
+                    - generic [ref=e228]: ★
+                    - text: "4.1"
+                - generic [ref=e229]:
+                  - 'heading "Willow: Behind the Magic" [level=3] [ref=e230]'
+                  - generic [ref=e231]:
+                    - paragraph [ref=e232]: Self (archive footage) (uncredited)
+                    - paragraph [ref=e233]: "2023"
+            - 'link "Samuel L. Jackson: Did I Stutter? ★ 9.0 Samuel L. Jackson: Did I Stutter? self 2023" [ref=e234] [cursor=pointer]':
+              - /url: /movies/1149402
+              - generic [ref=e235]:
+                - generic [ref=e236]:
+                  - 'img "Samuel L. Jackson: Did I Stutter?" [ref=e237]'
+                  - generic [ref=e238]:
+                    - generic [ref=e239]: ★
+                    - text: "9.0"
+                - generic [ref=e240]:
+                  - 'heading "Samuel L. Jackson: Did I Stutter?" [level=3] [ref=e241]'
+                  - generic [ref=e242]:
+                    - paragraph [ref=e243]: self
+                    - paragraph [ref=e244]: "2023"
+          - generic [ref=e245]:
+            - link "If These Walls Could Sing ★ 6.6 If These Walls Could Sing Self 2022" [ref=e246] [cursor=pointer]:
+              - /url: /movies/926392
+              - generic [ref=e247]:
+                - generic [ref=e248]:
+                  - img "If These Walls Could Sing" [ref=e249]
+                  - generic [ref=e250]:
+                    - generic [ref=e251]: ★
+                    - text: "6.6"
+                - generic [ref=e252]:
+                  - heading "If These Walls Could Sing" [level=3] [ref=e253]
+                  - generic [ref=e254]:
+                    - paragraph [ref=e255]: Self
+                    - paragraph [ref=e256]: "2022"
+            - 'link "Indiana Jones: The Search for the Lost Golden Age ★ 7.9 Indiana Jones: The Search for the Lost Golden Age Self - Filmmaker (archive footage) 2021" [ref=e257] [cursor=pointer]':
+              - /url: /movies/827007
+              - generic [ref=e258]:
+                - generic [ref=e259]:
+                  - 'img "Indiana Jones: The Search for the Lost Golden Age" [ref=e260]'
+                  - generic [ref=e261]:
+                    - generic [ref=e262]: ★
+                    - text: "7.9"
+                - generic [ref=e263]:
+                  - 'heading "Indiana Jones: The Search for the Lost Golden Age" [level=3] [ref=e264]'
+                  - generic [ref=e265]:
+                    - paragraph [ref=e266]: Self - Filmmaker (archive footage)
+                    - paragraph [ref=e267]: "2021"
+            - 'link "Under the Helmet: The Legacy of Boba Fett ★ 6.9 Under the Helmet: The Legacy of Boba Fett Self 2021" [ref=e268] [cursor=pointer]':
+              - /url: /movies/877181
+              - generic [ref=e269]:
+                - generic [ref=e270]:
+                  - 'img "Under the Helmet: The Legacy of Boba Fett" [ref=e271]'
+                  - generic [ref=e272]:
+                    - generic [ref=e273]: ★
+                    - text: "6.9"
+                - generic [ref=e274]:
+                  - 'heading "Under the Helmet: The Legacy of Boba Fett" [level=3] [ref=e275]'
+                  - generic [ref=e276]:
+                    - paragraph [ref=e277]: Self
+                    - paragraph [ref=e278]: "2021"
+            - 'link "Making Waves: The Art of Cinematic Sound ★ 6.8 Making Waves: The Art of Cinematic Sound Self 2019" [ref=e279] [cursor=pointer]':
+              - /url: /movies/595841
+              - generic [ref=e280]:
+                - generic [ref=e281]:
+                  - 'img "Making Waves: The Art of Cinematic Sound" [ref=e282]'
+                  - generic [ref=e283]:
+                    - generic [ref=e284]: ★
+                    - text: "6.8"
+                - generic [ref=e285]:
+                  - 'heading "Making Waves: The Art of Cinematic Sound" [level=3] [ref=e286]'
+                  - generic [ref=e287]:
+                    - paragraph [ref=e288]: Self
+                    - paragraph [ref=e289]: "2019"
+            - 'link "Star Wars: Galaxy''s Edge - Adventure Awaits ★ 6.1 Star Wars: Galaxy''s Edge - Adventure Awaits Self 2019" [ref=e290] [cursor=pointer]':
+              - /url: /movies/624371
+              - generic [ref=e291]:
+                - generic [ref=e292]:
+                  - 'img "Star Wars: Galaxy''s Edge - Adventure Awaits" [ref=e293]'
+                  - generic [ref=e294]:
+                    - generic [ref=e295]: ★
+                    - text: "6.1"
+                - generic [ref=e296]:
+                  - 'heading "Star Wars: Galaxy''s Edge - Adventure Awaits" [level=3] [ref=e297]'
+                  - generic [ref=e298]:
+                    - paragraph [ref=e299]: Self
+                    - paragraph [ref=e300]: "2019"
+          - generic [ref=e301]:
+            - link "The Phantom Menace 20 Years Later ★ N/A The Phantom Menace 20 Years Later Self 2019" [ref=e302] [cursor=pointer]:
+              - /url: /movies/603697
+              - generic [ref=e303]:
+                - generic [ref=e304]:
+                  - img "The Phantom Menace 20 Years Later" [ref=e305]
+                  - generic [ref=e306]:
+                    - generic [ref=e307]: ★
+                    - text: N/A
+                - generic [ref=e308]:
+                  - heading "The Phantom Menace 20 Years Later" [level=3] [ref=e309]
+                  - generic [ref=e310]:
+                    - paragraph [ref=e311]: Self
+                    - paragraph [ref=e312]: "2019"
+            - link "Spielberg ★ 7.6 Spielberg Self 2017" [ref=e313] [cursor=pointer]:
+              - /url: /movies/467062
+              - generic [ref=e314]:
+                - generic [ref=e315]:
+                  - img "Spielberg" [ref=e316]
+                  - generic [ref=e317]:
+                    - generic [ref=e318]: ★
+                    - text: "7.6"
+                - generic [ref=e319]:
+                  - heading "Spielberg" [level=3] [ref=e320]
+                  - generic [ref=e321]:
+                    - paragraph [ref=e322]: Self
+                    - paragraph [ref=e323]: "2017"
+            - 'link "Laddie: The Man Behind the Movies ★ 5.4 Laddie: The Man Behind the Movies Self 2017" [ref=e324] [cursor=pointer]':
+              - /url: /movies/322525
+              - generic [ref=e325]:
+                - generic [ref=e326]:
+                  - 'img "Laddie: The Man Behind the Movies" [ref=e327]'
+                  - generic [ref=e328]:
+                    - generic [ref=e329]: ★
+                    - text: "5.4"
+                - generic [ref=e330]:
+                  - 'heading "Laddie: The Man Behind the Movies" [level=3] [ref=e331]'
+                  - generic [ref=e332]:
+                    - paragraph [ref=e333]: Self
+                    - paragraph [ref=e334]: "2017"
+            - 'link "Star Wars: Evolution of the Lightsaber Duel ★ 6.3 Star Wars: Evolution of the Lightsaber Duel Self 2015" [ref=e335] [cursor=pointer]':
+              - /url: /movies/376798
+              - generic [ref=e336]:
+                - generic [ref=e337]:
+                  - 'img "Star Wars: Evolution of the Lightsaber Duel" [ref=e338]'
+                  - generic [ref=e339]:
+                    - generic [ref=e340]: ★
+                    - text: "6.3"
+                - generic [ref=e341]:
+                  - 'heading "Star Wars: Evolution of the Lightsaber Duel" [level=3] [ref=e342]'
+                  - generic [ref=e343]:
+                    - paragraph [ref=e344]: Self
+                    - paragraph [ref=e345]: "2015"
+            - 'link "Toy Story at 20: To Infinity and Beyond ★ 7.1 Toy Story at 20: To Infinity and Beyond Self 2015" [ref=e346] [cursor=pointer]':
+              - /url: /movies/406122
+              - generic [ref=e347]:
+                - generic [ref=e348]:
+                  - 'img "Toy Story at 20: To Infinity and Beyond" [ref=e349]'
+                  - generic [ref=e350]:
+                    - generic [ref=e351]: ★
+                    - text: "7.1"
+                - generic [ref=e352]:
+                  - 'heading "Toy Story at 20: To Infinity and Beyond" [level=3] [ref=e353]'
+                  - generic [ref=e354]:
+                    - paragraph [ref=e355]: Self
+                    - paragraph [ref=e356]: "2015"
+          - generic [ref=e357]:
+            - 'link "Sean Connery: In His Own Words ★ 6.0 Sean Connery: In His Own Words Self 2015" [ref=e358] [cursor=pointer]':
+              - /url: /movies/736636
+              - generic [ref=e359]:
+                - generic [ref=e360]:
+                  - 'img "Sean Connery: In His Own Words" [ref=e361]'
+                  - generic [ref=e362]:
+                    - generic [ref=e363]: ★
+                    - text: "6.0"
+                - generic [ref=e364]:
+                  - 'heading "Sean Connery: In His Own Words" [level=3] [ref=e365]'
+                  - generic [ref=e366]:
+                    - paragraph [ref=e367]: Self
+                    - paragraph [ref=e368]: "2015"
+            - 'link "Raiders, Raptors and Rebels: Behind the Magic of ILM ★ N/A Raiders, Raptors and Rebels: Behind the Magic of ILM Self - Filmmaker / Founder, ILM 2015" [ref=e369] [cursor=pointer]':
+              - /url: /movies/415688
+              - generic [ref=e370]:
+                - generic [ref=e371]:
+                  - 'img "Raiders, Raptors and Rebels: Behind the Magic of ILM" [ref=e372]'
+                  - generic [ref=e373]:
+                    - generic [ref=e374]: ★
+                    - text: N/A
+                - generic [ref=e375]:
+                  - 'heading "Raiders, Raptors and Rebels: Behind the Magic of ILM" [level=3] [ref=e376]'
+                  - generic [ref=e377]:
+                    - paragraph [ref=e378]: Self - Filmmaker / Founder, ILM
+                    - paragraph [ref=e379]: "2015"
+            - 'link "Magician: The Astonishing Life and Work of Orson Welles ★ 6.5 Magician: The Astonishing Life and Work of Orson Welles Self - Filmmaker (archive footage) 2014" [ref=e380] [cursor=pointer]':
+              - /url: /movies/298664
+              - generic [ref=e381]:
+                - generic [ref=e382]:
+                  - 'img "Magician: The Astonishing Life and Work of Orson Welles" [ref=e383]'
+                  - generic [ref=e384]:
+                    - generic [ref=e385]: ★
+                    - text: "6.5"
+                - generic [ref=e386]:
+                  - 'heading "Magician: The Astonishing Life and Work of Orson Welles" [level=3] [ref=e387]'
+                  - generic [ref=e388]:
+                    - paragraph [ref=e389]: Self - Filmmaker (archive footage)
+                    - paragraph [ref=e390]: "2014"
+            - link "Face of Unity ★ N/A Face of Unity Self 2014" [ref=e391] [cursor=pointer]:
+              - /url: /movies/377107
+              - generic [ref=e392]:
+                - generic [ref=e393]:
+                  - img "Face of Unity" [ref=e394]
+                  - generic [ref=e395]:
+                    - generic [ref=e396]: ★
+                    - text: N/A
+                - generic [ref=e397]:
+                  - heading "Face of Unity" [level=3] [ref=e398]
+                  - generic [ref=e399]:
+                    - paragraph [ref=e400]: Self
+                    - paragraph [ref=e401]: "2014"
+            - 'link "A Night at the Movies: George Lucas & The World of Fantasy Cinema ★ 1.2 A Night at the Movies: George Lucas & The World of Fantasy Cinema Self 2014" [ref=e402] [cursor=pointer]':
+              - /url: /movies/306434
+              - generic [ref=e403]:
+                - generic [ref=e404]:
+                  - 'img "A Night at the Movies: George Lucas & The World of Fantasy Cinema" [ref=e405]'
+                  - generic [ref=e406]:
+                    - generic [ref=e407]: ★
+                    - text: "1.2"
+                - generic [ref=e408]:
+                  - 'heading "A Night at the Movies: George Lucas & The World of Fantasy Cinema" [level=3] [ref=e409]'
+                  - generic [ref=e410]:
+                    - paragraph [ref=e411]: Self
+                    - paragraph [ref=e412]: "2014"
+    - generic [ref=e414]:
+      - heading "Similar Actors" [level=2] [ref=e415]
+      - generic [ref=e416]:
+        - link "Tommy Lee Jones Tommy Lee Jones Co-star in Men in Black" [ref=e417] [cursor=pointer]:
+          - /url: /actor/2176
+          - img "Tommy Lee Jones" [ref=e419]
+          - generic [ref=e420]:
+            - paragraph [ref=e421]: Tommy Lee Jones
+            - paragraph [ref=e422]: Co-star in Men in Black
+        - link "Will Smith Will Smith Co-star in Men in Black" [ref=e423] [cursor=pointer]:
+          - /url: /actor/2888
+          - img "Will Smith" [ref=e425]
+          - generic [ref=e426]:
+            - paragraph [ref=e427]: Will Smith
+            - paragraph [ref=e428]: Co-star in Men in Black
+        - link "Linda Fiorentino Linda Fiorentino Co-star in Men in Black" [ref=e429] [cursor=pointer]:
+          - /url: /actor/9625
+          - img "Linda Fiorentino" [ref=e431]
+          - generic [ref=e432]:
+            - paragraph [ref=e433]: Linda Fiorentino
+            - paragraph [ref=e434]: Co-star in Men in Black
+        - link "Vincent D'Onofrio Vincent D'Onofrio Co-star in Men in Black" [ref=e435] [cursor=pointer]:
+          - /url: /actor/7132
+          - img "Vincent D'Onofrio" [ref=e437]
+          - generic [ref=e438]:
+            - paragraph [ref=e439]: Vincent D'Onofrio
+            - paragraph [ref=e440]: Co-star in Men in Black
+  - button "Open Next.js Dev Tools" [ref=e446] [cursor=pointer]:
+    - img [ref=e447]
+  - alert [ref=e450]
+```

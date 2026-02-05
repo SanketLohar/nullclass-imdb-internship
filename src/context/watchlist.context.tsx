@@ -32,7 +32,7 @@ type ToastState = {
 type WatchlistContextType = {
   list: WatchlistMovie[];
   toggle: (movie: WatchlistInput) => Promise<void>;
-  isSaved: (id: string) => boolean;
+  isSaved: (id: string | number) => boolean;
   toast: ToastState | null;
   isLoading: boolean;
 };
@@ -58,12 +58,12 @@ export function WatchlistProvider({
   const [list, setList] = useState<WatchlistMovie[]>([]);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
 
-  const channelRef = useRef<BroadcastChannel | null>(null);
+  const { user } = useAuth();
+  const channelRef = useRef<any>(null);
 
   /* ---------------------------------------
-     INIT + SYNC LISTENER
+     INIT WATCHLIST (SAFE FOR EDGE)
   ---------------------------------------- */
   useEffect(() => {
     if (!user) {
@@ -73,49 +73,66 @@ export function WatchlistProvider({
     }
 
     setIsLoading(true);
-    // initial load
     getWatchlist(user.id).then((items) => {
       setList(items);
       setIsLoading(false);
     });
+  }, [user]);
 
-    // cross-tab channel
-    const channel = new BroadcastChannel(CHANNEL);
-    channelRef.current = channel;
+  /* ---------------------------------------
+     CROSS-TAB SYNC (EDGE SAFE)
+  ---------------------------------------- */
+  useEffect(() => {
+    if (!user) return;
 
-    channel.onmessage = async () => {
-      if (user) {
-        const latest = await getWatchlist(user.id);
-        setList(latest);
-      }
+    let mounted = true;
+
+    (async () => {
+      const mod = await import(
+        "@/lib/watchlist/watchlist.channel"
+      );
+
+      if (!mounted) return;
+
+      channelRef.current = mod.createWatchlistChannel(
+        CHANNEL,
+        async () => {
+          const latest = await getWatchlist(user.id);
+          setList(latest);
+        }
+      );
+    })();
+
+    return () => {
+      mounted = false;
+      channelRef.current?.close?.();
+      channelRef.current = null;
     };
-
-    return () => channel.close();
   }, [user]);
 
   /* ---------------------------------------
      BROADCAST CHANGE
   ---------------------------------------- */
   const broadcast = () => {
-    channelRef.current?.postMessage("updated");
+    channelRef.current?.postMessage?.("updated");
   };
 
   /* ---------------------------------------
      TOGGLE WATCHLIST
   ---------------------------------------- */
   const toggle = async (movie: WatchlistInput) => {
-    if (!user) return; // Should be handled by UI, but safe guard
+    if (!user) return;
 
     const movieId = String(movie.id);
     const existing = list.find(
-      (m: WatchlistMovie) => String(m.id) === movieId
+      (m) => String(m.id) === movieId
     );
 
     // ❌ REMOVE
     if (existing) {
       await removeFromWatchlist(user.id, movieId);
-      setList((prev: WatchlistMovie[]) =>
-        prev.filter((m: WatchlistMovie) => String(m.id) !== movieId)
+      setList((prev) =>
+        prev.filter((m) => String(m.id) !== movieId)
       );
 
       broadcast();
@@ -123,12 +140,8 @@ export function WatchlistProvider({
       setToast({
         message: "Removed from watchlist",
         undo: async () => {
-          if (!user) return;
           await addToWatchlist(existing);
-          setList((prev: WatchlistMovie[]) => [
-            existing,
-            ...prev,
-          ]);
+          setList((prev) => [existing, ...prev]);
           broadcast();
         },
       });
@@ -138,37 +151,33 @@ export function WatchlistProvider({
     else {
       const item: WatchlistMovie = {
         ...movie,
-        id: movieId, // Ensure ID is stored as string
+        id: movieId,
         userId: user.id,
         addedAt: Date.now(),
       };
 
       await addToWatchlist(item);
-      setList((prev: WatchlistMovie[]) => [item, ...prev]);
+      setList((prev) => [item, ...prev]);
 
       broadcast();
 
       setToast({
         message: "Added to watchlist",
         undo: async () => {
-          if (!user) return;
           await removeFromWatchlist(user.id, movieId);
-          setList((prev: WatchlistMovie[]) =>
-            prev.filter(
-              (m: WatchlistMovie) => String(m.id) !== movieId
-            )
+          setList((prev) =>
+            prev.filter((m) => String(m.id) !== movieId)
           );
           broadcast();
         },
       });
     }
 
-    // auto-hide toast
     setTimeout(() => setToast(null), 4000);
   };
 
   const isSaved = (id: string | number) =>
-    list.some((m: WatchlistMovie) => String(m.id) === String(id));
+    list.some((m) => String(m.id) === String(id));
 
   return (
     <WatchlistContext.Provider

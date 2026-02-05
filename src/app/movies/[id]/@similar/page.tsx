@@ -31,7 +31,7 @@ export default async function SimilarMoviesPage({
     // A movie is considered “similar” only if it shares at least one genre ID with the current movie.
     if (movie.genreIds && movie.genreIds.length > 0) {
       similarMovies = similarMovies.filter(sim =>
-        sim.genre_ids?.some(gid => movie.genreIds.includes(gid))
+        sim.genre_ids?.some(gid => movie.genreIds!.includes(gid))
       );
     }
   } catch (error) {
