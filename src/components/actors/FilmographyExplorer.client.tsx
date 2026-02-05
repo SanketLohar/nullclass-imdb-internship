@@ -2,8 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { FilmographyItem } from "@/data/actors.types";
 import { motion } from "framer-motion";
+
+interface FilmographyExplorerProps {
+  filmography: FilmographyItem[];
+}
 
 interface FilmographyExplorerProps {
   filmography: FilmographyItem[];
@@ -142,41 +147,52 @@ function FilmographyCard({ item }: { item: FilmographyItem }) {
   const [imgSrc, setImgSrc] = useState(item.poster || "/placeholder-movie.jpg");
 
   return (
-    <motion.div
-      whileHover={{ y: -5 }}
-      className="group h-full flex flex-col bg-zinc-900 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-black/50 transition-all"
-    >
-      {/* Poster Aspect Ratio 2:3 */}
-      <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-800">
-        <Image
-          src={imgSrc}
-          alt={item.title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-          loading="lazy"
-          onError={() => setImgSrc("/placeholder-movie.jpg")}
-        />
-        <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-yellow-500 flex items-center gap-1">
-          <span>★</span> {item.rating ? item.rating.toFixed(1) : "N/A"}
+    <Link href={`/movies/${item.id}`} className="block h-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded-xl" prefetch={false}>
+      <motion.div
+        whileHover={{ y: -5 }}
+        className="group h-full flex flex-col bg-zinc-900 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-black/50 transition-all"
+      >
+        {/* Poster Aspect Ratio 2:3 */}
+        <div className="relative aspect-[2/3] w-full overflow-hidden bg-zinc-800">
+          {!imgSrc || imgSrc.includes("placeholder") ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-zinc-800 text-center">
+              <span className="text-3xl mb-2 opacity-20">🎬</span>
+              <span className="text-xs text-zinc-500 font-medium line-clamp-3 uppercase tracking-wider">
+                {item.title}
+              </span>
+            </div>
+          ) : (
+            <Image
+              src={imgSrc}
+              alt={item.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+              loading="lazy"
+              onError={() => setImgSrc("")}
+            />
+          )}
+          <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-yellow-500 flex items-center gap-1">
+            <span>★</span> {item.rating ? item.rating.toFixed(1) : "N/A"}
+          </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="p-3 flex flex-col flex-1 gap-1">
-        <h3 className="font-semibold text-sm line-clamp-2 leading-tight text-white group-hover:text-yellow-400 transition-colors">
-          {item.title}
-        </h3>
+        {/* Content */}
+        <div className="p-3 flex flex-col flex-1 gap-1">
+          <h3 className="font-semibold text-sm line-clamp-2 leading-tight text-white group-hover:text-yellow-400 transition-colors">
+            {item.title}
+          </h3>
 
-        <div className="mt-auto pt-2 space-y-1">
-          <p className="text-xs text-zinc-400 truncate">
-            {item.role || "Actor"}
-          </p>
-          <p className="text-xs text-zinc-500">
-            {item.year > 0 ? item.year : "Unknown"}
-          </p>
+          <div className="mt-auto pt-2 space-y-1">
+            <p className="text-xs text-zinc-400 truncate">
+              {item.role || "Actor"}
+            </p>
+            <p className="text-xs text-zinc-500">
+              {item.year > 0 ? item.year : "Unknown"}
+            </p>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 }

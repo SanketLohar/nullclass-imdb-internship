@@ -13,14 +13,18 @@ export default function MovieHero({ movie }: any) {
 
   return (
     <section className="relative h-[85vh] w-full bg-black text-white overflow-hidden">
-      <Image
-        src={movie.backdropUrl || "/placeholder-backdrop.jpg"}
-        alt={movie.title || "Movie Backdrop"}
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover opacity-70"
-      />
+      {movie.backdropUrl ? (
+        <Image
+          src={movie.backdropUrl}
+          alt={movie.title || "Movie Backdrop"}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-70"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black opacity-80" />
+      )}
 
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
 

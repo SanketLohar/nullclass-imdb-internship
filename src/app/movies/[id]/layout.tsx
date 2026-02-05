@@ -1,18 +1,22 @@
 import { Suspense } from "react";
 
-export default function MovieLayout({
+export default async function MovieLayout({
   children,
   overview,
   cast,
   reviews,
   similar,
+  params,
 }: {
   children: React.ReactNode;
   overview: React.ReactNode;
   cast: React.ReactNode;
   reviews: React.ReactNode;
   similar: React.ReactNode;
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
+
   return (
     <>
       {children}
@@ -20,7 +24,7 @@ export default function MovieLayout({
         <Suspense>{overview}</Suspense>
         <Suspense>{cast}</Suspense>
         <Suspense>{reviews}</Suspense>
-        <Suspense>{similar}</Suspense>
+        <Suspense key={`similar-${id}`}>{similar}</Suspense>
       </main>
     </>
   );

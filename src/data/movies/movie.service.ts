@@ -21,7 +21,7 @@ export async function getMovieById(
       let trailer: string | undefined;
       try {
         const videos = await tmdbService.getMovieVideos(movieId);
-        const trailerVideo = videos.results.find(v => v.site === "YouTube" && v.type === "Trailer");
+        const trailerVideo = videos.results?.find(v => v.site === "YouTube" && v.type === "Trailer");
         if (trailerVideo) {
           trailer = `https://www.youtube.com/watch?v=${trailerVideo.key}`;
         }
@@ -44,6 +44,7 @@ export async function getMovieById(
         runtime: tmdbMovie.runtime || 0,
         trailer,
         cast: [], // Will be fetched separately
+        genreIds: tmdbMovie.genres?.map(g => g.id) || [],
         genres: tmdbMovie.genres?.map(g => g.name) || [],
       };
     } catch (error) {
@@ -72,7 +73,7 @@ export async function getMovieById(
 /**
  * Get similar movies from TMDb
  */
-export async function getSimilarMovies(movieId: number): Promise<Array<{ id: number; title: string; posterUrl: string; rating: number }>> {
+export async function getSimilarMovies(movieId: number): Promise<Array<{ id: number; title: string; posterUrl: string; rating: number; genre_ids?: number[] }>> {
   try {
     const { getSimilarMovies: getSimilar } = await import("@/lib/tmdb/tmdb.service");
     return await getSimilar(movieId);
@@ -87,6 +88,7 @@ export async function getSimilarMovies(movieId: number): Promise<Array<{ id: num
         title: m.title,
         posterUrl: m.posterUrl,
         rating: m.rating,
+        genre_ids: [], // Mocks don't support strict genre filtering
       }));
   }
 }

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import { getActorById } from "@/data/actors/actor.service";
 import { Metadata } from "next";
@@ -69,38 +70,11 @@ export default async function ActorLayout({
 
   let actor = null;
 
-  // Try TMDB
-  if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
-    try {
-      const { tmdbService } = await import("@/lib/tmdb/tmdb.service");
-      const [tmdbPerson, config] = await Promise.all([
-        tmdbService.getActorDetails(actorId),
-        tmdbService.getConfig()
-      ]);
+  // Fetch Actor Data
+  // Optimization: getActorById handles TMDB fetching, caching, and normalization internally.
+  // We use this single source of truth to ensure the Layout (Header) matches the sub-pages.
+  actor = await getActorById(actorId, { strict: false }); // Hero rendering doesn't need strict checks
 
-      actor = {
-        id: tmdbPerson.id,
-        name: tmdbPerson.name,
-        birthDate: tmdbPerson.birthday || "Unknown",
-        birthPlace: tmdbPerson.place_of_birth || "Unknown",
-        biography: tmdbPerson.biography || "No biography available.",
-        image: tmdbPerson.profile_path
-          ? `${config.images.secure_base_url}w500${tmdbPerson.profile_path}`
-          : "/placeholder-actor.svg",
-        coverImage: tmdbPerson.profile_path
-          ? `${config.images.secure_base_url}original${tmdbPerson.profile_path}`
-          : "/placeholder-backdrop.jpg",
-        awards: [], // Mock or fetch if available
-        social: {
-          instagram: "",
-          twitter: "",
-          imdb: `https://www.imdb.com/name/${tmdbPerson.imdb_id}/`,
-        }
-      };
-    } catch (e) {
-      console.error("Failed to fetch actor from TMDB", e);
-    }
-  }
 
   // Fallback
   if (!actor) {
@@ -208,7 +182,9 @@ export default async function ActorLayout({
 
         {/* SIMILAR ACTORS */}
         <section>
-          {similar}
+          <Suspense fallback={null} key={`similar-${actorId}`}>
+            {similar}
+          </Suspense>
         </section>
       </div>
     </>

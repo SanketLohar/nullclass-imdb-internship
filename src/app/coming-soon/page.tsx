@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { tmdbService } from "@/lib/tmdb/tmdb.service";
+import MovieCard from "@/components/MovieCard";
 
 export default async function ComingSoonPage() {
   let movies: Array<{
@@ -41,25 +42,17 @@ export default async function ComingSoonPage() {
               <Link
                 key={movie.id}
                 href={`/movies/${movie.id}`}
-                className="group"
+                className="block h-full"
               >
-                <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2">
-                  <Image
-                    src={movie.posterUrl}
-                    alt={movie.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                    quality={90}
-                    loading="lazy"
-                  />
-                </div>
-                <h3 className="font-semibold text-sm mb-1 group-hover:text-yellow-400 transition-colors">
-                  {movie.title}
-                </h3>
-                <p className="text-xs text-zinc-400">
-                  {movie.releaseYear} • ⭐ {movie.rating.toFixed(1)}
-                </p>
+                <MovieCard
+                  id={movie.id}
+                  title={movie.title}
+                  rating={movie.rating}
+                  image={movie.posterUrl}
+                  posterUrl={movie.posterUrl}
+                  year={movie.releaseYear}
+                  genre={[]} // No genre data available for coming soon listing
+                />
               </Link>
             ))}
           </div>

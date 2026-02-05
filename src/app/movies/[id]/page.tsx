@@ -18,7 +18,7 @@ async function getMovie(id: string) {
       tmdbService.getMovieVideos(movieId),
     ]);
 
-    const trailer = videos.results.find(
+    const trailer = videos.results?.find(
       (v) => v.site === "YouTube" && v.type === "Trailer"
     );
 
@@ -34,13 +34,14 @@ async function getMovie(id: string) {
         : "/placeholder-movie.jpg",
       backdropUrl: movie.backdrop_path
         ? `${config.images.secure_base_url}original${movie.backdrop_path}`
-        : "/placeholder-backdrop.jpg",
+        : (movie.poster_path ? `${config.images.secure_base_url}original${movie.poster_path}` : null),
       trailerKey: trailer?.key ?? "",
       awards: movie.imdb_id
-        ? await getMovieAwards(movie.imdb_id)
+        ? await getMovieAwards(movie.imdb_id).catch(() => "No awards information available.")
         : "No awards information available.",
     };
-  } catch {
+  } catch (error) {
+    console.error(`[MovieDebug] Failed to load movie ${id}:`, error);
     return null;
   }
 }

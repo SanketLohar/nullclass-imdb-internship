@@ -3,71 +3,49 @@ import Link from "next/link";
 import Image from "next/image";
 import ActorCard from "@/components/actors/ActorCard.client";
 
+// Force dynamic rendering to ensure fresh data, but we can cache the API call
+export const dynamic = "force-dynamic";
+
 export default async function ActorsPage() {
     let actors: any[] = [];
 
     if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
         try {
-            // Fetch more pages to ensure we have enough candidates
-            // We need a large pool because strict validation (Bio + Awards) drops many
-            const pages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            // 1. Fetch popular actors (Pages 1-2 is usually enough for 24 high-quality ones)
+            // Fetching more pages to improve diversity if needed, but 1-2 is fast.
+            const pages = [1, 2, 3];
             const responses = await Promise.all(pages.map(p => tmdbService.getPopularActors(p)));
             const allCandidates = responses.flatMap(r => r?.results || []);
 
-            // Remove duplicates just in case
+            // 2. Filter & Map DIRECTLY (No N+1 requests)
             const seen = new Set();
-            const uniqueCandidates = allCandidates.filter(c => {
-                const duplicate = seen.has(c.id);
-                seen.add(c.id);
-                return !duplicate;
-            });
+            actors = allCandidates
+                .filter(c => {
+                    // Strict filtering on list view to ensure quality
+                    if (!c.id || seen.has(c.id)) return false;
+                    if (!c.name || !c.profile_path) return false;
+                    // c.known_for is standard in /person/popular
+                    return true;
+                })
+                .map(c => {
+                    seen.add(c.id);
+                    // Extract known movies
+                    const knownForText = Array.isArray(c.known_for)
+                        ? c.known_for
+                            .filter((k: any) => k.media_type === "movie" && k.title)
+                            .map((k: any) => k.title)
+                            .slice(0, 3)
+                            .join(", ")
+                        : "";
 
-            // "Fill the Bucket" Strategy
-            // Process candidates in small batches to avoid Rate Limiting (OMDb/TMDB)
-            // Stop once we have enough valid actors (Target: 24)
-            const TARGET_COUNT = 24;
-            const BATCH_SIZE = 5;
-            const validActors: any[] = [];
-
-            // Import service dynamically
-            const { getActorById } = await import("@/data/actors/actor.service");
-
-            for (let i = 0; i < uniqueCandidates.length; i += BATCH_SIZE) {
-                if (validActors.length >= TARGET_COUNT) break;
-
-                const batch = uniqueCandidates.slice(i, i + BATCH_SIZE);
-
-                const batchResults = await Promise.all(
-                    batch.map(async (candidate: any) => {
-                        // Quick pre-filter
-                        if (candidate.name === "John Leonidas" || !candidate.profile_path || candidate.popularity < 10) return null;
-
-                        try {
-                            // Strict Mode: Service handles Bio/IMDb/Awards validation internally
-                            // Optimization: Skip awards check for list view to avoid OMDb rate limits
-                            const detailedActor = await getActorById(candidate.id, { strict: true, skipAwards: true });
-
-                            if (detailedActor) {
-                                return {
-                                    id: detailedActor.id,
-                                    name: detailedActor.name,
-                                    image: detailedActor.image,
-                                    popularity: candidate.popularity,
-                                    knownFor: detailedActor.filmography.slice(0, 3).map(f => f.title).join(", ")
-                                };
-                            }
-                        } catch (e) {
-                            return null;
-                        }
-                        return null;
-                    })
-                );
-
-                const validBatch = batchResults.filter(a => a !== null);
-                validActors.push(...validBatch);
-            }
-
-            actors = validActors;
+                    return {
+                        id: c.id,
+                        name: c.name,
+                        image: `https://image.tmdb.org/t/p/w500${c.profile_path}`,
+                        knownFor: knownForText || "Popular Actor"
+                    };
+                })
+                .slice(0, 30); // Show top 30
         } catch (e) {
             console.error("Failed to fetch popular actors", e);
         }
@@ -77,17 +55,23 @@ export default async function ActorsPage() {
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold mb-8">Popular Actors</h1>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {actors.map((actor) => (
-                    <ActorCard
-                        key={actor.id}
-                        id={actor.id}
-                        name={actor.name}
-                        image={actor.image}
-                        knownFor={actor.knownFor}
-                    />
-                ))}
-            </div>
+            {actors.length === 0 ? (
+                <div className="text-center py-20 text-muted-foreground">
+                    <p>Unable to load actors at this time.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {actors.map((actor) => (
+                        <ActorCard
+                            key={actor.id}
+                            id={actor.id}
+                            name={actor.name}
+                            image={actor.image}
+                            knownFor={actor.knownFor}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

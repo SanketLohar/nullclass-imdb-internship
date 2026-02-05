@@ -1,6 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 
 type Props = {
   visible: boolean;
@@ -15,7 +17,16 @@ export default function Toast({
   actionLabel,
   onAction,
 }: Props) {
-  return (
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {visible && (
         <motion.div
@@ -23,22 +34,23 @@ export default function Toast({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ duration: 0.25 }}
-          className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl bg-zinc-900 px-6 py-4 shadow-xl flex items-center gap-4"
+          className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 rounded-xl bg-zinc-900 px-6 py-4 shadow-xl flex items-center gap-4 border border-zinc-800"
         >
-          <span className="text-white text-sm">
+          <span className="text-white text-sm whitespace-nowrap">
             {message}
           </span>
 
           {actionLabel && (
             <button
               onClick={onAction}
-              className="text-yellow-400 font-semibold hover:underline"
+              className="text-yellow-400 font-semibold hover:underline text-sm whitespace-nowrap"
             >
               {actionLabel}
             </button>
           )}
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

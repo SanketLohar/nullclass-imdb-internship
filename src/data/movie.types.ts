@@ -37,6 +37,7 @@ export type Movie = {
   rating: number;
 
   genres: string[];
+  genreIds?: number[];
   cast: CastMember[];
   trailer?: string; // Optional trailer URL
 };

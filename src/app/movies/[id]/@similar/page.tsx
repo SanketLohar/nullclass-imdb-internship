@@ -22,10 +22,18 @@ export default async function SimilarMoviesPage({
   }
 
   // Fetch similar movies from TMDb
-  let similarMovies: { id: number; title: string; posterUrl: string; rating: number }[] = [];
+  let similarMovies: { id: number; title: string; posterUrl: string; rating: number; genre_ids?: number[] }[] = [];
 
   try {
     similarMovies = await getSimilarMovies(movieId);
+
+    // STRICT GENRE FILTERING
+    // A movie is considered “similar” only if it shares at least one genre ID with the current movie.
+    if (movie.genreIds && movie.genreIds.length > 0) {
+      similarMovies = similarMovies.filter(sim =>
+        sim.genre_ids?.some(gid => movie.genreIds.includes(gid))
+      );
+    }
   } catch (error) {
     console.error("Failed to fetch similar movies:", error);
   }

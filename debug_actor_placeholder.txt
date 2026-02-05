@@ -1,0 +1,21 @@
+
+const { getActorById } = require('./src/data/actors/actor.service');
+
+async function testActor() {
+    console.log("Testing actor fetch for ID: 3002581");
+    try {
+        const actor = await getActorById(3002581, { strict: false });
+        console.log("Result:", actor ? "Found" : "Null");
+        if (actor) {
+            console.log("Name:", actor.name);
+            console.log("Bio length:", actor.biography?.length);
+            console.log("Filmography count:", actor.filmography?.length);
+        }
+    } catch (e) {
+        console.error("Error:", e);
+    }
+}
+
+// We need to mock the environment and imports since we can't run TS directly easily without ts-node or transpilation
+// Actually, running 'npm run dev' is running, so I can just add console logs to the actual service.
+// But to isolate, I'll modify the service file to log heavily.

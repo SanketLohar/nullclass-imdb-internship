@@ -32,6 +32,7 @@ interface TMDBMovie {
   tagline?: string | null;
   status?: string;
   genres?: { id: number; name: string }[];
+  genre_ids?: number[];
   popularity?: number;
 }
 
@@ -104,6 +105,18 @@ class TMDBService {
         },
       } as T;
     }
+    if (endpoint.includes("/videos")) {
+      return { results: [] } as T;
+    }
+    if (endpoint.includes("/images")) {
+      return { backdrops: [], posters: [] } as T;
+    }
+    if (endpoint.includes("/credits")) {
+      return { cast: [], crew: [] } as T;
+    }
+    if (endpoint.includes("/external_ids")) {
+      return { imdb_id: undefined } as T;
+    }
     return {} as T;
   }
 
@@ -112,8 +125,8 @@ class TMDBService {
       !!movie.id &&
       typeof movie.title === "string" &&
       movie.title.trim().length > 0 &&
-      movie.vote_average > 0 && // Ensure it has been rated
-      (!!movie.poster_path || !!movie.backdrop_path) && // Must have visual
+      // movie.vote_average > 0 && // ALLOW unrated movies (new releases)
+      // (!!movie.poster_path || !!movie.backdrop_path) && // ALLOW missing images (placeholders used)
       !/^[0-9]+$/.test(movie.title) // Reject numeric-only titles (garbage)
     );
   }
@@ -141,7 +154,10 @@ class TMDBService {
     );
 
     if (!this.isValidMovie(movie)) {
-      throw new Error("Invalid movie data");
+      // throw new Error("Invalid movie data"); // Don't throw, just return "empty" or handle upstream
+      // Actually, for getMovieDetails, we should probably return null if invalid, 
+      // but the return type is TMDBMovie. Let's allowing it if ID exists.
+      console.warn(`[TMDB] Relaxed validation for movie ${movieId}`);
     }
     return movie;
   }
@@ -402,7 +418,7 @@ export async function getMovieImages(movieId: number): Promise<{ backdrops: Arra
   }
 }
 
-export async function getSimilarMovies(movieId: number): Promise<Array<{ id: number; title: string; posterUrl: string; rating: number }>> {
+export async function getSimilarMovies(movieId: number): Promise<Array<{ id: number; title: string; posterUrl: string; rating: number; genre_ids: number[] }>> {
   try {
     const response = await tmdbService.getSimilarMovies(movieId);
     const config = await tmdbService.getConfig();
@@ -414,6 +430,7 @@ export async function getSimilarMovies(movieId: number): Promise<Array<{ id: num
         ? `${config.images.secure_base_url}w780${movie.poster_path}`
         : "/placeholder-movie.jpg",
       rating: movie.vote_average,
+      genre_ids: movie.genre_ids || [],
     }));
   } catch {
     return [];

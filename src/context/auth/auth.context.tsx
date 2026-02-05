@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import type { User } from "./auth.types";
+import { broadcastAuthLogin, broadcastAuthLogout, listenToAuthSync } from "@/lib/auth/authSync";
 
 type AuthContextValue = {
   user: User | null;
@@ -31,6 +32,29 @@ export function AuthProvider({
     }
   }, []);
 
+  useEffect(() => {
+    // Listen for cross-tab auth events
+    const removeListener = listenToAuthSync(
+      () => {
+        // AUTH_LOGIN: Reload user from storage to sync state
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            setUser(JSON.parse(raw));
+          }
+        } catch { /* ignore */ }
+      },
+      () => {
+        // AUTH_LOGOUT: Clear local state
+        setUser(null);
+      }
+    );
+
+    return () => {
+      removeListener();
+    };
+  }, []);
+
   function login() {
     // Generate unique user ID for this session
     const userId = localStorage.getItem("user-id") || `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -48,11 +72,13 @@ export function AuthProvider({
     );
 
     setUser(mockUser);
+    broadcastAuthLogin();
   }
 
   function logout() {
     localStorage.removeItem(STORAGE_KEY);
     setUser(null);
+    broadcastAuthLogout();
   }
 
   return (
