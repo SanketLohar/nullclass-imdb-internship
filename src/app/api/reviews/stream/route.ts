@@ -1,7 +1,8 @@
 import { createReviewStream } from "@/data/reviews/review.stream";
 import { NextRequest, NextResponse } from "next/server";
 
-// export const runtime = "edge";
+// Edge Runtime: Safe because this is a readonly stream using standard Web APIs
+export const runtime = "edge";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

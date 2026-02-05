@@ -109,10 +109,10 @@ export default async function ActorPage({
               </h1>
 
               <div className="flex gap-6">
-                <Stat icon={<Star />} text={`${actor.stats.avgRating.toFixed(1)} Rating`} />
+                <Stat icon={<Star aria-hidden="true" />} text={`${actor.stats.avgRating.toFixed(1)} Rating`} />
                 {actor.stats.totalAwards > 0 && (
                   <Stat
-                    icon={<Award />}
+                    icon={<Award aria-hidden="true" />}
                     text={`${actor.stats.totalAwards} Awards`}
                   />
                 )}
@@ -148,17 +148,17 @@ export default async function ActorPage({
               </h3>
               <div className="flex gap-4">
                 {actor.socialMedia.instagram && (
-                  <a href={actor.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors">
-                    <Instagram />
+                  <a href={actor.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit Instagram">
+                    <Instagram aria-hidden="true" />
                   </a>
                 )}
                 {actor.socialMedia.twitter && (
-                  <a href={actor.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors">
-                    <Twitter />
+                  <a href={actor.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit Twitter">
+                    <Twitter aria-hidden="true" />
                   </a>
                 )}
                 {actor.socialMedia.imdb && (
-                  <a href={actor.socialMedia.imdb} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors">
+                  <a href={actor.socialMedia.imdb} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit IMDb">
                     IMDb
                   </a>
                 )}
@@ -197,8 +197,8 @@ export default async function ActorPage({
                       fill
                       className="object-cover"
                     />
-                    <div className="absolute top-3 right-3 bg-black/70 px-2 py-1 rounded-md flex gap-1 text-yellow-500 text-sm">
-                      <Star className="w-4 h-4 fill-current" />
+                    <div className="absolute top-3 right-3 bg-black/70 px-2 py-1 rounded-md flex gap-1 text-yellow-400 text-sm">
+                      <Star className="w-4 h-4 fill-current" aria-hidden="true" />
                       {movie.rating}
                     </div>
                   </div>

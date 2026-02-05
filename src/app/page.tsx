@@ -5,6 +5,9 @@ import { tmdbService } from "@/lib/tmdb/tmdb.service";
 import { Award, Clock, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+// Edge Runtime: Safe because this uses only fetch-based TMDB service (Request coalescing is memory-safe or ignored on Edge)
+export const runtime = "edge";
+
 async function getMovies() {
   const [trending, upcomingMovies, config] = await Promise.all([
     tmdbService.getPopularMovies(),
@@ -76,25 +79,25 @@ export default async function HomePage() {
               icon: TrendingUp,
               label: "Trending",
               path: "/movies?sort=trending",
-              color: "bg-yellow-500",
+              color: "bg-yellow-400 text-black", // Black on Yellow is accessible
             },
             {
               icon: Star,
               label: "Top Rated",
               path: "/top-rated",
-              color: "bg-purple-500",
+              color: "bg-purple-600 text-white", // Increased from 500
             },
             {
               icon: Clock,
               label: "Coming Soon",
               path: "/coming-soon",
-              color: "bg-blue-500",
+              color: "bg-blue-600 text-white", // Increased from 500
             },
             {
               icon: Award,
               label: "Awards",
               path: "/awards",
-              color: "bg-red-500",
+              color: "bg-red-600 text-white", // Increased from 500
             },
           ].map((category, index) => (
             <Link
@@ -102,7 +105,7 @@ export default async function HomePage() {
               href={category.path}
               className={`${category.color} p-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-80 transition-opacity`}
             >
-              <category.icon className="w-5 h-5" />
+              <category.icon className="w-5 h-5" aria-hidden="true" />
               <span className="font-medium">
                 {category.label}
               </span>
@@ -114,13 +117,13 @@ export default async function HomePage() {
         <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-yellow-500" />
+              <TrendingUp className="w-6 h-6 text-yellow-700" aria-hidden="true" />
               Trending Now
             </h2>
 
             <Link
               href="/movies?sort=trending"
-              className="text-yellow-500 hover:text-yellow-400"
+              className="text-yellow-700 hover:text-yellow-600"
             >
               View All
             </Link>
@@ -135,13 +138,13 @@ export default async function HomePage() {
         <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Clock className="w-6 h-6 text-yellow-500" />
+              <Clock className="w-6 h-6 text-yellow-700" aria-hidden="true" />
               Coming Soon
             </h2>
 
             <Link
               href="/coming-soon"
-              className="text-yellow-500 hover:text-yellow-400"
+              className="text-yellow-700 hover:text-yellow-600"
             >
               View All
             </Link>

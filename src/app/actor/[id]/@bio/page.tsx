@@ -19,12 +19,12 @@ export default async function BioPage({
   const localizedBio = getActorBiography(actor, locale);
 
   return (
-    <section className="bg-zinc-900/60 rounded-xl p-6">
+    <section className="bg-zinc-900/90 rounded-xl p-6 text-zinc-100">
       <h2 className="text-xl font-semibold mb-4">
         Biography
       </h2>
 
-      <p className="text-neutral-300 leading-relaxed">
+      <p className="text-zinc-200 leading-relaxed">
         {localizedBio}
       </p>
     </section>

@@ -61,8 +61,8 @@ export default function MovieCard({
           {title}
         </h3>
 
-        <div className="flex items-center gap-1 text-sm text-yellow-500">
-          <Star className="w-4 h-4 fill-current" />
+        <div className="flex items-center gap-1 text-sm text-yellow-700">
+          <Star className="w-4 h-4 fill-current" aria-hidden="true" />
           {rating.toFixed(1)}
         </div>
 

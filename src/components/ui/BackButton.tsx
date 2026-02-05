@@ -16,7 +16,7 @@ export default function BackButton({ className }: { className?: string }) {
             )}
             aria-label="Go back"
         >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={20} aria-hidden="true" />
         </button>
     );
 }

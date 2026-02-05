@@ -24,9 +24,10 @@ export default async function SocialPanel({
           <a
             href={actor.social.instagram}
             target="_blank"
-            className="flex items-center gap-2 text-pink-400"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-pink-600 hover:text-pink-700 transition-colors"
           >
-            <Instagram size={18} />
+            <Instagram size={18} aria-hidden="true" />
             Instagram
           </a>
         )}
@@ -35,9 +36,10 @@ export default async function SocialPanel({
           <a
             href={actor.social.twitter}
             target="_blank"
-            className="flex items-center gap-2 text-sky-400"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sky-600 hover:text-sky-700 transition-colors"
           >
-            <Twitter size={18} />
+            <Twitter size={18} aria-hidden="true" />
             Twitter
           </a>
         )}
@@ -46,9 +48,10 @@ export default async function SocialPanel({
           <a
             href={actor.social.imdb}
             target="_blank"
-            className="flex items-center gap-2 text-yellow-400"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-yellow-700 hover:text-yellow-800 transition-colors"
           >
-            <Globe size={18} />
+            <Globe size={18} aria-hidden="true" />
             IMDb
           </a>
         )}

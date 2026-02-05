@@ -9,10 +9,10 @@ export default function ThemeToggle() {
 
   // Order: Light -> Dark -> Auto -> High Contrast -> Light
   const themes: Array<{ value: "light" | "dark" | "auto" | "high-contrast"; icon: React.ReactNode; label: string }> = [
-    { value: "light", icon: <Sun className="w-4 h-4" />, label: "Light" },
-    { value: "dark", icon: <Moon className="w-4 h-4" />, label: "Dark" },
-    { value: "auto", icon: <Monitor className="w-4 h-4" />, label: "Auto" },
-    { value: "high-contrast", icon: <Contrast className="w-4 h-4" />, label: "High Contrast" },
+    { value: "light", icon: <Sun className="w-4 h-4" aria-hidden="true" />, label: "Light" },
+    { value: "dark", icon: <Moon className="w-4 h-4" aria-hidden="true" />, label: "Dark" },
+    { value: "auto", icon: <Monitor className="w-4 h-4" aria-hidden="true" />, label: "Auto" },
+    { value: "high-contrast", icon: <Contrast className="w-4 h-4" aria-hidden="true" />, label: "High Contrast" },
   ];
 
   const currentTheme = themes.find((t) => t.value === theme) || themes[0];

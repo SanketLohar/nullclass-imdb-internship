@@ -60,7 +60,7 @@ export default function MovieHero({ movie }: any) {
               onClick={() => router.push(`?play=true`)}
               className="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all transform hover:scale-105"
             >
-              <Play size={24} className="fill-black" />
+              <Play size={24} className="fill-black" aria-hidden="true" />
               Watch Trailer
             </button>
 

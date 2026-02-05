@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FilmographyItem } from "@/data/actors.types";
 import { motion } from "framer-motion";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 interface FilmographyExplorerProps {
   filmography: FilmographyItem[];
@@ -22,6 +23,8 @@ export default function FilmographyExplorer({
     role?: string;
     genre?: string;
   }>({});
+
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Extract unique years, roles, and genres for filters
   const { years, roles, genres } = useMemo(() => {
@@ -47,12 +50,49 @@ export default function FilmographyExplorer({
     });
   }, [filmography, filters]);
 
+  // Responsive Column Counter
+  const [columns, setColumns] = useState(2);
+  useEffect(() => {
+    const updateColumns = () => {
+      // Logic adjusted to match Tailwind grid-cols breakpoints
+      // grid-cols-2 (<640px)
+      // sm:grid-cols-3 (>=640px)
+      // lg:grid-cols-4 (>=1024px)
+      // xl:grid-cols-5 (>=1280px)
+      const w = window.innerWidth;
+      if (w >= 1280) setColumns(5);
+      else if (w >= 1024) setColumns(4);
+      else if (w >= 640) setColumns(3);
+      else setColumns(2);
+    };
+
+    // Initial call
+    updateColumns();
+
+    window.addEventListener("resize", updateColumns);
+    return () => window.removeEventListener("resize", updateColumns);
+  }, []);
+
+  // Virtualizer
+  const rowCount = Math.ceil(filtered.length / columns);
+  const rowVirtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 400, // Approximate card height + gap
+    overscan: 3,
+  });
+
+  // Reset scroll on filter change
+  useEffect(() => {
+    rowVirtualizer.scrollToOffset(0);
+  }, [filters, columns, rowVirtualizer]);
+
   return (
     <div className="space-y-6">
       {/* Faceted Filters */}
-      <div className="flex flex-wrap gap-4 p-4 bg-zinc-900/60 rounded-xl">
+      <div className="flex flex-wrap gap-4 p-4 bg-zinc-900/90 rounded-xl">
         <div className="flex items-center gap-2">
-          <label className="text-sm text-zinc-400">Year:</label>
+          <label className="text-sm text-zinc-300">Year:</label>
           <select
             value={filters.year || ""}
             onChange={(e) =>
@@ -61,6 +101,7 @@ export default function FilmographyExplorer({
                 year: e.target.value ? Number(e.target.value) : undefined,
               }))
             }
+            aria-label="Filter by Year"
             className="bg-zinc-800 text-white px-3 py-1 rounded-md text-sm"
           >
             <option value="">All Years</option>
@@ -73,7 +114,7 @@ export default function FilmographyExplorer({
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-sm text-zinc-400">Role:</label>
+          <label className="text-sm text-zinc-300">Role:</label>
           <select
             value={filters.role || ""}
             onChange={(e) =>
@@ -82,6 +123,7 @@ export default function FilmographyExplorer({
                 role: e.target.value || undefined,
               }))
             }
+            aria-label="Filter by Role"
             className="bg-zinc-800 text-white px-3 py-1 rounded-md text-sm"
           >
             <option value="">All Roles</option>
@@ -94,7 +136,7 @@ export default function FilmographyExplorer({
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-sm text-zinc-400">Genre:</label>
+          <label className="text-sm text-zinc-300">Genre:</label>
           <select
             value={filters.genre || ""}
             onChange={(e) =>
@@ -103,6 +145,7 @@ export default function FilmographyExplorer({
                 genre: e.target.value || undefined,
               }))
             }
+            aria-label="Filter by Genre"
             className="bg-zinc-800 text-white px-3 py-1 rounded-md text-sm"
           >
             <option value="">All Genres</option>
@@ -123,20 +166,58 @@ export default function FilmographyExplorer({
           </button>
         )}
 
-        <div className="ml-auto text-sm text-zinc-400">
+        <div className="ml-auto text-sm text-zinc-300">
           Showing {filtered.length} of {filmography.length} films
         </div>
       </div>
 
+      {/* Virtualized Grid Container */}
       {filtered.length === 0 ? (
         <div className="text-center py-12 text-zinc-500 bg-zinc-900/20 rounded-xl border border-white/5">
           No films found matching your filters.
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filtered.map((item) => (
-            <FilmographyCard key={`${item.id}-${item.role}-${item.year}`} item={item} />
-          ))}
+        <div
+          ref={parentRef}
+          // Height fixed at 70vh to ensure the list remains scrollable within the viewport 
+          // without pushing critical UI (like filters) off-screen on smaller devices.
+          className="h-[70vh] min-h-[500px] overflow-y-auto w-full rounded-xl pr-2"
+          style={{ contain: "strict" }}
+        >
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const rowStart = virtualRow.index * columns;
+              const rowItems = filtered.slice(rowStart, rowStart + columns);
+
+              return (
+                <div
+                  key={virtualRow.key}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+                >
+                  {rowItems.map((item) => (
+                    <FilmographyCard
+                      key={`${item.id}-${item.role}-${item.year}`}
+                      item={item}
+                    />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

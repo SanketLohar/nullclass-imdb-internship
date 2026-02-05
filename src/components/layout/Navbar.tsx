@@ -51,7 +51,7 @@ export default function Navbar() {
               onSubmit={handleSearch}
               className="relative"
             >
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" aria-hidden="true" />
               <input
                 value={searchQuery}
                 onChange={(e) =>
@@ -113,11 +113,13 @@ export default function Navbar() {
             onClick={() =>
               setIsMenuOpen((p) => !p)
             }
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? (
-              <X className="w-6 h-6" />
+              <X className="w-6 h-6" aria-hidden="true" />
             ) : (
-              <Menu className="w-6 h-6" />
+              <Menu className="w-6 h-6" aria-hidden="true" />
             )}
           </button>
         </div>

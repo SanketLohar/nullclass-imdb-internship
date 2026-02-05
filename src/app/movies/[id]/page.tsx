@@ -7,6 +7,9 @@ import MovieHero from "@/components/movies/MovieHero.client";
 
 /* ---------------- FETCH ---------------- */
 
+// Edge Runtime: Safe because it relies on fetch-based services and cached data
+export const runtime = "edge";
+
 async function getMovie(id: string) {
   const movieId = Number(id);
   if (isNaN(movieId)) return null;

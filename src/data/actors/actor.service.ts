@@ -52,7 +52,7 @@ export async function getActorById(id: number, options?: { strict?: boolean; ski
     const filmography: FilmographyItem[] = uniqueCast
       .filter((m: any) =>
         m.id &&
-        // m.poster_path && // Allow missing poster (we can use placeholder if needed, though card uses movie poster)
+        m.poster_path &&
         // m.release_date && // Allow missing date
         // m.vote_average > 0 && // Allow unrated
         // m.vote_count > 0 && // Allow no votes
@@ -108,6 +108,7 @@ export async function getActorById(id: number, options?: { strict?: boolean; ski
         twitter: details.external_ids?.twitter_id ? `https://twitter.com/${details.external_ids.twitter_id}` : "",
         imdb: details.imdb_id ? `https://www.imdb.com/name/${details.imdb_id}/` : "",
       },
+      similarActors: [], // Fetched via parallel route or separate call
     };
   } catch (error) {
     console.error(`[ActorDebug] CRITICAL ERROR fetching actor ${id}:`, error);

@@ -9,8 +9,9 @@ type AuthEvent = {
 let authChannel: BroadcastChannel | null = null;
 
 function getAuthChannel() {
-    if (!authChannel && typeof window !== "undefined") {
-        authChannel = new BroadcastChannel(AUTH_CHANNEL_NAME);
+    if (!authChannel && typeof window !== "undefined" && (window as any).BroadcastChannel) {
+        const BC = (window as any).BroadcastChannel;
+        authChannel = new BC(AUTH_CHANNEL_NAME);
     }
     return authChannel;
 }
