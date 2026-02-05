@@ -29,7 +29,7 @@ export default function WatchlistClient() {
         My Watchlist
       </h1>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-6">
         {list.map((movie) => (
           <Link key={movie.id} href={`/movies/${movie.id}`} className="block h-full transition-transform hover:scale-105">
             <MovieCard

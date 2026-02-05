@@ -142,24 +142,24 @@ export default async function ActorLayout({
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-transparent" />
           </div>
 
-          <div className="relative h-full flex items-end pb-8 px-6 z-10 pt-8 md:pt-0">
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-end w-full md:w-auto text-center md:text-left">
+          <div className="relative h-full flex items-end pb-6 md:pb-8 px-4 md:px-6 z-10 pt-6 md:pt-0">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-center md:items-end w-full md:w-auto text-center md:text-left">
               <Image
                 src={actor.image || "/placeholder-actor.svg"}
                 alt={localizedName || actor?.name || "Actor Profile"}
                 width={180}
                 height={180}
-                className="rounded-xl border-4 border-zinc-950 shadow-2xl object-cover bg-zinc-800 w-[140px] h-[140px] md:w-[180px] md:h-[180px]"
+                className="rounded-xl border-4 border-zinc-950 shadow-2xl object-cover bg-zinc-800 w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[180px] md:h-[180px]"
                 priority
                 fetchPriority="high"
                 sizes="(max-width: 768px) 140px, 180px"
               />
               <div className="pb-2">
-                <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-md">
+                <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white drop-shadow-md leading-tight">
                   {localizedName}
                 </h1>
                 {alternateNames.length > 0 && (
-                  <p className="text-sm text-zinc-400 mt-2 font-medium">
+                  <p className="text-xs sm:text-sm text-zinc-400 mt-1 md:mt-2 font-medium">
                     Also known as: {alternateNames.join(", ")}
                   </p>
                 )}

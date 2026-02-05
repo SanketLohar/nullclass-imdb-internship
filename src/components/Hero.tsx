@@ -4,7 +4,7 @@ import { Play, Star, Calendar, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getMovieTrailers } from "@/lib/tmdb/tmdb.service";
-import TrailerPlayer from "./movies/TrailerPlayer";
+import TrailerModal from "@/components/trailer/TrailerModal.client";
 
 interface HeroProps {
   movies?: Array<{
@@ -56,7 +56,7 @@ export default function Hero({ movies = [] }: HeroProps) {
           console.error("Invalid URL:", trailers[0]);
         }
       } else {
-        // Optional: Show toast "No trailer available"
+        alert("No trailer available for this movie.");
         console.warn("No trailer found");
       }
     } catch (error) {
@@ -68,13 +68,11 @@ export default function Hero({ movies = [] }: HeroProps) {
 
   return (
     <div className="relative min-h-[65vh] md:min-h-[90vh] flex items-center">
-      {trailerKey && (
-        <TrailerPlayer
-          videoKey={trailerKey}
-          initialPlay={true}
-          onClose={() => setTrailerKey(null)}
-        />
-      )}
+      <TrailerModal
+        videoKey={trailerKey || ""}
+        isOpen={!!trailerKey}
+        onClose={() => setTrailerKey(null)}
+      />
 
       <div
         className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
@@ -83,26 +81,26 @@ export default function Hero({ movies = [] }: HeroProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 w-full pt-20 md:pt-0">
+      <div className="relative z-10 container mx-auto px-4 w-full pt-24 md:pt-0">
         <div className="max-w-2xl text-white">
-          <h1 className="text-3xl md:text-6xl font-bold mb-4 drop-shadow-lg leading-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 md:mb-4 drop-shadow-lg leading-tight">
             {movie.title}
           </h1>
 
           <div className="flex items-center gap-3 mb-4 text-yellow-400">
-            <Star className="fill-current w-5 h-5" />
-            <span className="text-xl font-bold">{movie.rating.toFixed(1)}</span>
+            <Star className="fill-current w-4 h-4 md:w-5 md:h-5" />
+            <span className="text-lg md:text-xl font-bold">{movie.rating.toFixed(1)}</span>
           </div>
 
-          <p className="mb-6 text-white/90 text-base md:text-lg line-clamp-3 drop-shadow-md">
+          <p className="mb-6 text-white/90 text-sm md:text-lg line-clamp-3 drop-shadow-md">
             {movie.description}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button
               onClick={handleWatchTrailer}
               disabled={isLoadingTrailer}
-              className="bg-yellow-500 text-black px-6 py-3 rounded-xl font-semibold hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="bg-yellow-500 text-black px-6 py-3 rounded-xl font-semibold hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto text-base"
             >
               {isLoadingTrailer ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -114,7 +112,7 @@ export default function Hero({ movies = [] }: HeroProps) {
 
             <Link
               href={`/movies/${movie.id}`}
-              className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-xl hover:bg-white/20 transition-colors font-medium text-center w-full sm:w-auto"
+              className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-xl hover:bg-white/20 transition-colors font-medium text-center w-full sm:w-auto text-base"
             >
               More Info
             </Link>

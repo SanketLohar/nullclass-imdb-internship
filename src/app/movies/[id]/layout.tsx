@@ -20,7 +20,7 @@ export default async function MovieLayout({
   return (
     <>
       {children}
-      <main className="container mx-auto px-4 py-8 md:py-16 space-y-12 md:space-y-24">
+      <main className="container mx-auto px-4 py-6 md:py-16 space-y-8 md:space-y-24">
         <Suspense>{overview}</Suspense>
         <Suspense>{cast}</Suspense>
         <Suspense>{reviews}</Suspense>
