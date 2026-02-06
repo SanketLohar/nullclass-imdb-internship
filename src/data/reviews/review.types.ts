@@ -44,4 +44,7 @@ export type Review = {
   createdAt: number;
   updatedAt: number | null;
   deletedAt: number | null;
+
+  // Optional flag for seeded content
+  isSeeded?: boolean;
 };

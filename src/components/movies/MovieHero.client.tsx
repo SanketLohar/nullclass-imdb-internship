@@ -1,13 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Play, Star } from "lucide-react";
-import { useRouter } from "next/navigation";
 import WatchlistButton from "../WatchlistButton";
+import TrailerModal from "@/components/trailer/TrailerModal.client";
 
 export default function MovieHero({ movie }: any) {
-  const router = useRouter();
+  const [showTrailer, setShowTrailer] = useState(false);
 
   if (!movie) return null;
 
@@ -59,14 +60,14 @@ export default function MovieHero({ movie }: any) {
             <button
               onClick={() => {
                 if (movie.trailerKey) {
-                  router.push(`?play=true`);
+                  setShowTrailer(true);
                 } else {
                   alert("No trailer available for this movie.");
                 }
               }}
               className={`bg-yellow-500 text-black px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-bold text-base sm:text-lg flex items-center justify-center gap-3 transition-all transform ${movie.trailerKey
-                  ? "hover:bg-yellow-400 hover:scale-105 cursor-pointer"
-                  : "opacity-50 cursor-not-allowed hover:none"
+                ? "hover:bg-yellow-400 hover:scale-105 cursor-pointer"
+                : "opacity-50 cursor-not-allowed hover:none"
                 }`}
             >
               <Play size={20} className="fill-black" aria-hidden="true" />
@@ -87,6 +88,12 @@ export default function MovieHero({ movie }: any) {
           </div>
         </motion.div>
       </div>
+
+      <TrailerModal
+        videoKey={movie.trailerKey || ""}
+        isOpen={showTrailer}
+        onClose={() => setShowTrailer(false)}
+      />
     </section>
   );
 }

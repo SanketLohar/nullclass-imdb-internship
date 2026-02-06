@@ -38,7 +38,7 @@ export default function MovieHeroShell({
 
   // Get trailer URL - try movie.trailer first, fallback to YouTube
   const trailerUrl = movie.trailer || "";
-  
+
   // Debug: Log trailer URL (remove in production)
   if (typeof window !== "undefined" && trailerUrl) {
     console.log("Trailer URL:", trailerUrl);
@@ -118,25 +118,35 @@ export default function MovieHeroShell({
       <AnimatePresence>
         {showTrailer && trailerUrl && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
+            className="fixed inset-0 z-50 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowTrailer(false)}
             role="dialog"
             aria-modal="true"
             aria-labelledby="trailer-title"
+            onClick={(e) => {
+              // Only close if clicking the backdrop area, not the content
+              if (e.target === e.currentTarget) {
+                setShowTrailer(false);
+              }
+            }}
           >
+            {/* Backdrop visual */}
+            <div
+              className="fixed inset-0 bg-black/95 -z-10"
+              aria-hidden="true"
+            />
+
             <motion.div
               className="relative w-full max-w-5xl aspect-video mx-4"
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setShowTrailer(false)}
-                className="absolute -top-12 right-0 text-white hover:text-yellow-400 transition-colors z-10"
+                className="absolute -top-12 right-0 text-white hover:text-yellow-400 transition-colors z-30"
                 aria-label="Close trailer"
               >
                 <span className="text-2xl">×</span>
@@ -144,7 +154,7 @@ export default function MovieHeroShell({
               {(() => {
                 let embedUrl = "";
                 let videoId = "";
-                
+
                 // Extract video ID from various YouTube URL formats
                 if (trailerUrl.includes("youtube.com/watch?v=")) {
                   videoId = trailerUrl.split("watch?v=")[1]?.split("&")[0] || "";
@@ -153,9 +163,9 @@ export default function MovieHeroShell({
                 } else if (trailerUrl.includes("youtube.com/embed/")) {
                   videoId = trailerUrl.split("embed/")[1]?.split("?")[0] || "";
                 }
-                
+
                 if (videoId) {
-                  embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+                  embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&playsinline=1&rel=0&enablejsapi=1&widget_referrer=${typeof window !== 'undefined' ? window.location.origin : ''}`;
                 } else {
                   // Fallback - try to use URL as-is
                   embedUrl = trailerUrl;
@@ -164,11 +174,13 @@ export default function MovieHeroShell({
                 return (
                   <iframe
                     src={embedUrl}
-                    className="w-full h-full rounded-lg"
-                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                    className="w-full h-full rounded-lg min-w-[300px] min-h-[200px]"
+                    width="100%"
+                    height="100%"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowFullScreen
-                    title={`${movie.title} Trailer`}
                     frameBorder="0"
+                    title={`${movie.title} Trailer`}
                     loading="lazy"
                   />
                 );

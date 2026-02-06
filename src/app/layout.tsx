@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -19,11 +19,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  maximumScale: 5, // Access requirements usually prohibit blocking zoom, but "mobile view appears zoomed" implies we need control. `initial-scale=1` is key.
+  userScalable: true,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   title: "MovieDB",
   description: "Your ultimate movie database",
 };
+
+import { BasicWebVitals } from "./reportWebVitals";
 
 export default function RootLayout({
   children,
@@ -39,6 +49,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <Providers>
+          <BasicWebVitals />
           {/* Service Worker Registration */}
           <ServiceWorkerRegistration />
 

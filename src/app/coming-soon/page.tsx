@@ -5,19 +5,9 @@ import { tmdbService } from "@/lib/tmdb/tmdb.service";
 import MovieCard from "@/components/MovieCard";
 
 export default async function ComingSoonPage() {
-  let movies: Array<{
-    id: number;
-    title: string;
-    posterUrl: string;
-    rating: number;
-    releaseYear: number;
-  }> = [];
-
   // Fetch upcoming movies from TMDb using centralized logic
-  if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
-    const { getComingSoonMovies } = await import("@/lib/tmdb/tmdb.service");
-    movies = await getComingSoonMovies();
-  }
+  const { getComingSoonMovies } = await import("@/lib/tmdb/tmdb.service");
+  const movies = await getComingSoonMovies();
 
   return (
     <div className="container mx-auto px-4 py-16">

@@ -96,7 +96,7 @@ export default function MovieCarousel({
                 loading={currentIndex === 0 ? "eager" : "lazy"}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              
+
               {items[currentIndex].title && (
                 <div className="absolute bottom-0 left-0 right-0 p-8">
                   <h3 className="text-3xl font-bold text-white mb-2">
@@ -150,26 +150,43 @@ export default function MovieCarousel({
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex
+              className={`w-2 h-2 rounded-full transition-all ${index === currentIndex
                   ? "bg-white w-8"
                   : "bg-white/40 hover:bg-white/60"
-              }`}
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
       )}
 
-      {/* Keyboard Navigation */}
+      {/* Keyboard Navigation - Roving Tabindex Implementation */}
       <div
+        role="group"
+        aria-label="Movie Carousel"
+        className="sr-only" // Visible controls are naturally reachable, this is for enhanced screen reader/keyboard users who might assume carousel behavior
+      >
+        <button tabIndex={0} onClick={goToPrevious} aria-label="Previous Slide">Previous</button>
+        <button tabIndex={0} onClick={goToNext} aria-label="Next Slide">Next</button>
+      </div>
+
+      {/* Focusable container for arrow key navigation */}
+      <div
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Highlights"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === "ArrowLeft") goToPrevious();
-          if (e.key === "ArrowRight") goToNext();
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            goToPrevious();
+          }
+          if (e.key === "ArrowRight") {
+            e.preventDefault();
+            goToNext();
+          }
         }}
-        className="sr-only"
-        aria-label="Carousel navigation"
+        className="absolute inset-0 z-0 outline-none focus:ring-4 focus:ring-yellow-500/50 rounded-xl"
       />
     </div>
   );

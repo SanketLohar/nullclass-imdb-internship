@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import ReviewForm, {
   ReviewSubmitPayload,
@@ -140,6 +141,7 @@ export default function ReviewsClient({
 
       votes: { up: 0, down: 0, userVotes: {} },
       score: 0,
+      wilsonScore: 0,
 
       moderation: {
         isFlagged: false,
@@ -274,51 +276,75 @@ export default function ReviewsClient({
   /* ----------------------------------
      Cross-Tab Sync
   ---------------------------------- */
+  /* ----------------------------------
+     Cross-Tab Sync & SSE
+  ---------------------------------- */
   useEffect(() => {
-    // Import dynamically to avoid SSR issues with BroadcastChannel if not handled by the hook internals
-    // (Hook handles window check but dynamic import is safer for code splitting)
+    // 1. BroadcastChannel (Local Sync)
     import("@/data/reviews/review.sync").then(({ subscribeToReviewSync }) => {
       const cleanup = subscribeToReviewSync((event) => {
-        // 1. FILTER: Ignore events for other movies
-        const eventMovieId =
-          event.type === "REVIEW_DELETE"
-            ? String(event.payload.movieId)
-            : String(event.payload.movieId);
-
-        if (eventMovieId !== String(movieId)) return;
-
-        setReviews((prev) => {
-          // 2. MERGE
-          if (event.type === "REVIEW_ADD") {
-            const newReview = event.payload as unknown as Review;
-            // Prevent duplicates
-            if (prev.some((r) => r.id === newReview.id)) return prev;
-            return [newReview, ...prev];
-          }
-
-          if (event.type === "REVIEW_UPDATE" || event.type === "REVIEW_RESTORE") {
-            const updatedReview = event.payload as unknown as Review;
-            // Check if it exists
-            const exists = prev.some((r) => r.id === updatedReview.id);
-            if (!exists) {
-              // If it's a restore or update and we don't have it, add it
-              return [updatedReview, ...prev];
-            }
-            return prev.map((r) =>
-              r.id === updatedReview.id ? updatedReview : r
-            );
-          }
-
-          if (event.type === "REVIEW_DELETE") {
-            // Remove from list
-            return prev.filter((r) => r.id !== event.payload.reviewId);
-          }
-
-          return prev;
-        });
+        handleRemoteEvent(event);
       });
       return cleanup;
     });
+
+    // 2. SSE (Server Push)
+    const eventSource = new EventSource("/api/reviews/sse");
+    eventSource.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type && data.payload) {
+          handleRemoteEvent(data);
+        }
+      } catch (err) {
+        console.error("SSE Parse Error", err);
+      }
+    };
+
+    return () => {
+      eventSource.close();
+    };
+
+    // Helper to process events from either source
+    function handleRemoteEvent(event: any) {
+      // 1. FILTER: Ignore events for other movies
+      const eventMovieId =
+        event.type === "REVIEW_DELETE"
+          ? String(event.payload.movieId)
+          : String(event.payload.movieId);
+
+      if (eventMovieId !== String(movieId)) return;
+
+      setReviews((prev) => {
+        // 2. MERGE
+        if (event.type === "REVIEW_ADD") {
+          const newReview = event.payload as unknown as Review;
+          // Prevent duplicates
+          if (prev.some((r) => r.id === newReview.id)) return prev;
+          return [newReview, ...prev];
+        }
+
+        if (event.type === "REVIEW_UPDATE" || event.type === "REVIEW_RESTORE") {
+          const updatedReview = event.payload as unknown as Review;
+          // Check if it exists
+          const exists = prev.some((r) => r.id === updatedReview.id);
+          if (!exists) {
+            // If it's a restore or update and we don't have it, add it
+            return [updatedReview, ...prev];
+          }
+          return prev.map((r) =>
+            r.id === updatedReview.id ? updatedReview : r
+          );
+        }
+
+        if (event.type === "REVIEW_DELETE") {
+          // Remove from list
+          return prev.filter((r) => r.id !== event.payload.reviewId);
+        }
+
+        return prev;
+      });
+    }
   }, [movieId]);
 
 
@@ -347,16 +373,26 @@ export default function ReviewsClient({
       />
 
       <div className="space-y-4">
-        {sortedReviews.map((review, index) => (
-          <ReviewItem
-            key={`${review.id}-${review.createdAt}-${index}`}
-            review={review}
-            currentUserId={user?.id}
-            onDelete={() => handleDelete(review)}
-            onReport={() => handleReport(review)}
-            onEdit={(content, rating) => handleEdit(review, content)}
-          />
-        ))}
+        <AnimatePresence mode="popLayout">
+          {sortedReviews.map((review, index) => (
+            <motion.div
+              key={`${review.id}-${review.createdAt}`}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            >
+              <ReviewItem
+                review={review}
+                currentUserId={user?.id}
+                onDelete={() => handleDelete(review)}
+                onReport={() => handleReport(review)}
+                onEdit={(content, rating) => handleEdit(review, content)}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       {/* Notification Toast */}

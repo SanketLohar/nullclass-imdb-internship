@@ -11,7 +11,7 @@ import { REVIEW_STORE } from "./review.db";
 import { containsProfanity } from "@/lib/moderation/profanity";
 import { emitReviewEvent } from "./review.events";
 import { queueOperationForSync } from "@/lib/watchlist/service-worker";
-import { createVectorClock } from "../watchlist/watchlist.conflict"; // Reuse/Warning: Review doesn't have vector clock in types yet, I'll skip VC for review sync as it was not strictly required by audit to have conflict res, just background sync. I'll just send deviceId.
+// import { createVectorClock } from "../watchlist/watchlist.conflict"; 
 import { calculateWilsonScore } from "@/lib/reviews/wilsonScore";
 
 function getDeviceId() {

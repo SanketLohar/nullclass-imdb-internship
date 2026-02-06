@@ -9,9 +9,10 @@ const voteSchema = z.object({
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
         const result = voteSchema.safeParse(body);
 
@@ -25,7 +26,7 @@ export async function POST(
         const { type, userId } = result.data;
 
         const review = await voteReview(
-            params.id,
+            id,
             type,
             userId
         );

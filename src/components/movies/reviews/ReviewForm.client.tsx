@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { nanoid } from "nanoid";
 import Link from "next/link";
 import { useAuth } from "@/context/auth/auth.context";
 import StarRatingInput from "./StarRatingInput";
 import { reviewSchema } from "@/data/reviews/review.schema";
 import type { ReviewInput } from "@/data/reviews/review.schema";
+import { useAutosave } from "@/hooks/useAutosave";
 
 export type ReviewSubmitPayload = {
   input: ReviewInput;
@@ -20,11 +21,23 @@ type Props = {
 
 export default function ReviewForm({ movieId, action }: Props) {
   const { user } = useAuth();
+
   const [rating, setRating] = useState(4);
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const keyRef = useRef(nanoid());
+
+  // Autosave Hook
+  const draftKey = `review-draft-${movieId}-${user?.id || 'anon'}`;
+  const { isSaving, savedValue, clear } = useAutosave(draftKey, content);
+
+  // Restore draft when loaded or synced
+  useEffect(() => {
+    if (savedValue !== null && savedValue !== undefined) {
+      setContent(savedValue as string);
+    }
+  }, [savedValue]);
 
   // 🔒 not logged in
   if (!user) {
@@ -58,6 +71,9 @@ export default function ReviewForm({ movieId, action }: Props) {
       idempotencyKey: keyRef.current,
     });
 
+    // Clear Draft
+    clear();
+
     // Reset form
     setContent("");
     setRating(4);
@@ -88,6 +104,7 @@ export default function ReviewForm({ movieId, action }: Props) {
           className="w-full rounded-md bg-muted p-3 text-sm text-foreground outline-none border border-transparent focus:border-yellow-500/50 transition-colors"
           rows={4}
         />
+        {isSaving && <span className="text-xs text-muted-foreground mt-1">Saving draft...</span>}
       </div>
 
       {error && (

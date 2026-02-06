@@ -7,45 +7,36 @@ import Image from "next/image";
 import MovieCard from "@/components/MovieCard";
 
 export default async function TopRatedPage() {
-  let movies = MOVIES.slice(0, 20).sort((a, b) => b.rating - a.rating);
+  // Fetch from TMDb
+  const { tmdbService } = await import("@/lib/tmdb/tmdb.service");
+  const responses = await Promise.all([
+    tmdbService.getTopRatedMovies(1),
+    tmdbService.getTopRatedMovies(2),
+    tmdbService.getTopRatedMovies(3),
+  ]);
+  const config = await tmdbService.getConfig();
 
-  // Try to fetch from TMDb if API key is available
-  if (process.env.NEXT_PUBLIC_TMDB_API_KEY) {
-    try {
-      const { tmdbService } = await import("@/lib/tmdb/tmdb.service");
-      const responses = await Promise.all([
-        tmdbService.getTopRatedMovies(1),
-        tmdbService.getTopRatedMovies(2),
-        tmdbService.getTopRatedMovies(3),
-      ]);
-      const config = await tmdbService.getConfig();
+  const allMovies = responses.flatMap(r => r.results);
+  const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.id, m])).values());
 
-      const allMovies = responses.flatMap(r => r.results);
-      const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.id, m])).values());
-
-      movies = uniqueMovies
-        .filter(m => m.poster_path && m.release_date && m.vote_count > 100)
-        .map(movie => ({
-          id: movie.id,
-          title: movie.title,
-          overview: movie.overview,
-          releaseYear: new Date(movie.release_date).getFullYear(),
-          rating: movie.vote_average,
-          posterUrl: movie.poster_path
-            ? `${config.images.secure_base_url}w500${movie.poster_path}`
-            : "/placeholder-movie.jpg",
-          backdropUrl: movie.backdrop_path
-            ? `${config.images.secure_base_url}w1280${movie.backdrop_path}`
-            : "/placeholder-backdrop.jpg",
-          runtime: 0,
-          cast: [],
-          genres: [],
-        }));
-    } catch (error) {
-      console.error("Failed to fetch top rated from TMDb:", error);
-      // Fallback to mock data
-    }
-  }
+  const movies = uniqueMovies
+    .filter(m => m.poster_path && m.release_date && m.vote_count > 100)
+    .map(movie => ({
+      id: movie.id,
+      title: movie.title,
+      overview: movie.overview,
+      releaseYear: new Date(movie.release_date).getFullYear(),
+      rating: movie.vote_average,
+      posterUrl: movie.poster_path
+        ? `${config.images.secure_base_url}w500${movie.poster_path}`
+        : "/placeholder-movie.jpg",
+      backdropUrl: movie.backdrop_path
+        ? `${config.images.secure_base_url}w1280${movie.backdrop_path}`
+        : "/placeholder-backdrop.jpg",
+      runtime: 0,
+      cast: [],
+      genres: [],
+    }));
 
   return (
     <div className="container mx-auto px-4 py-16">

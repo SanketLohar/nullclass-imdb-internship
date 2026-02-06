@@ -57,8 +57,7 @@ export function useWatchlist() {
           }
           // Remove vector clock metadata for client
           const { vectorClock, deviceId, updatedAt, ...item } = message.item;
-          // @ts-ignore
-          return [...prev, item];
+          return [...prev, item as WatchlistMovie];
         });
       } else if (message.type === "REMOVE") {
         setWatchlist((prev) => prev.filter((item) => item.id !== message.itemId));

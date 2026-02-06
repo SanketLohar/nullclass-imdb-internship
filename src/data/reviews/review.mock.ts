@@ -22,6 +22,8 @@ export const reviewStore: Review[] = [
       userVotes: {},
     },
     score: 0.92,
+    wilsonScore: 0.92,
+
     moderation: {
       isFlagged: false,
       flagsCount: 0,
@@ -47,6 +49,8 @@ export const reviewStore: Review[] = [
       userVotes: {},
     },
     score: 0.95,
+    wilsonScore: 0.95,
+
     moderation: {
       isFlagged: false,
       flagsCount: 0,
@@ -73,6 +77,8 @@ export const reviewStore: Review[] = [
       userVotes: {},
     },
     score: 1.0,
+    wilsonScore: 1.0,
+
     moderation: {
       isFlagged: false,
       flagsCount: 0,
@@ -98,6 +104,8 @@ export const reviewStore: Review[] = [
       userVotes: {},
     },
     score: 0.2,
+    wilsonScore: 0.2,
+
     moderation: {
       isFlagged: false,
       flagsCount: 0,
@@ -124,6 +132,8 @@ export const reviewStore: Review[] = [
       userVotes: {},
     },
     score: 0.55, // Controversial - close to 0.5
+    wilsonScore: 0.55,
+
     moderation: {
       isFlagged: false,
       flagsCount: 0,
@@ -149,6 +159,8 @@ export const reviewStore: Review[] = [
       userVotes: {},
     },
     score: 0.17,
+    wilsonScore: 0.17,
+
     moderation: {
       isFlagged: false,
       flagsCount: 0,

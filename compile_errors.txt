@@ -1,0 +1,17 @@
+(node:24972) ExperimentalWarning: CommonJS module C:\Program Files\nodejs\node_modules\npm\node_modules\debug\src\node.js is loading ES Module C:\Program Files\nodejs\node_modules\npm\node_modules\supports-color\index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+.next/dev/types/validator.ts(261,31): error TS2344: Type 'typeof import("C:/Users/hp/Desktop/nullclass-imdb-internship/src/app/api/reviews/[id]/vote/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/reviews/[id]/vote">'.
+  Types of property 'POST' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<Review> | NextResponse<{ error: string; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(261,31): error TS2344: Type 'typeof import("C:/Users/hp/Desktop/nullclass-imdb-internship/src/app/api/reviews/[id]/vote/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/reviews/[id]/vote">'.
+  Types of property 'POST' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<Review> | NextResponse<{ error: string; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.

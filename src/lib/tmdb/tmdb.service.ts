@@ -46,7 +46,8 @@ interface TMDBResponse<T> {
 class TMDBService {
   private async request<T>(
     endpoint: string,
-    params?: Record<string, string>
+    params?: Record<string, string>,
+    skipFallback = false
   ): Promise<T> {
     const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
     url.searchParams.set("api_key", TMDB_API_KEY);
@@ -79,7 +80,7 @@ class TMDBService {
           return response.json();
         });
       },
-      () => {
+      skipFallback ? undefined : () => {
         // Fallback to mock data
         return this.getMockData<T>(endpoint);
       }
@@ -150,7 +151,7 @@ class TMDBService {
   async getMovieDetails(movieId: number): Promise<TMDBMovie> {
     const cacheKey = `tmdb-movie-${movieId}`;
     const movie = await coalesceRequest(cacheKey, () =>
-      this.request<TMDBMovie>(`/movie/${movieId}`)
+      this.request<TMDBMovie>(`/movie/${movieId}`, undefined, true)
     );
 
     if (!this.isValidMovie(movie)) {
@@ -167,7 +168,7 @@ class TMDBService {
     const data = await coalesceRequest(cacheKey, () =>
       this.request<TMDBResponse<TMDBMovie>>("/movie/popular", {
         page: page.toString(),
-      })
+      }, true)
     );
     if (data && data.results) {
       data.results = data.results.filter(this.isValidMovie);
@@ -182,7 +183,7 @@ class TMDBService {
     const data = await coalesceRequest(cacheKey, () =>
       this.request<TMDBResponse<TMDBMovie>>("/movie/top_rated", {
         page: page.toString(),
-      })
+      }, true)
     );
     if (data && data.results) {
       data.results = data.results.filter(this.isValidMovie);
@@ -263,14 +264,14 @@ class TMDBService {
   async getMovieCredits(movieId: number): Promise<{ cast: any[]; crew: any[] }> {
     const cacheKey = `tmdb-credits-${movieId}`;
     return coalesceRequest(cacheKey, () =>
-      this.request<{ cast: any[]; crew: any[] }>(`/movie/${movieId}/credits`)
+      this.request<{ cast: any[]; crew: any[] }>(`/movie/${movieId}/credits`, undefined, true)
     );
   }
 
   async getActorDetails(actorId: number): Promise<any> {
     const cacheKey = `tmdb-actor-${actorId}`;
     return coalesceRequest(cacheKey, () =>
-      this.request<any>(`/person/${actorId}`, { append_to_response: "external_ids" })
+      this.request<any>(`/person/${actorId}`, { append_to_response: "external_ids" }, true)
     );
   }
 
@@ -291,7 +292,7 @@ class TMDBService {
           "primary_release_date.gte": "2026-03-01",
           sort_by: "popularity.desc",
           "vote_count.gte": "0", // Include unreleased with anticipation
-        }).catch(() => ({ results: [], page: 1, total_pages: 0, total_results: 0 } as TMDBResponse<TMDBMovie>))
+        }, true)
       )
     );
 
@@ -304,7 +305,7 @@ class TMDBService {
           "primary_release_date.gte": "2026-03-01",
           with_origin_country: "IN",
           sort_by: "popularity.desc",
-        }).catch(() => ({ results: [], page: 1, total_pages: 0, total_results: 0 } as TMDBResponse<TMDBMovie>))
+        }, true)
       )
     );
 
@@ -344,17 +345,11 @@ class TMDBService {
 
   async getPopularActors(page = 1): Promise<TMDBResponse<any>> {
     const cacheKey = `tmdb-popular-actors-${page}`;
-    const data = await coalesceRequest(cacheKey, () =>
+    return coalesceRequest(cacheKey, () =>
       this.request<TMDBResponse<any>>("/person/popular", {
         page: page.toString(),
-      })
+      }, true) // Skip fallback to allow error boundary to catch offline errors
     );
-
-    // Ensure safe return
-    if (!data || !data.results) {
-      return { results: [], page: 1, total_pages: 0, total_results: 0 };
-    }
-    return data;
   }
 
   async getSimilarActors(actorId: number): Promise<any[]> {

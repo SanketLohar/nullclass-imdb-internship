@@ -10,8 +10,7 @@ export function getRevalidationTag(actorId: number): string {
 
 export async function revalidateActor(actorId: number) {
   const tag = getRevalidationTag(actorId);
-  // @ts-ignore
-  revalidateTag(tag);
+  revalidateTag(tag, 'default');
   console.log(`[Revalidate] Tag: ${tag}`);
 }
 
@@ -89,7 +88,7 @@ export async function getActorById(id: number, options?: { strict?: boolean; ski
       return null;
     }
 
-    return {
+    const actor: Actor = {
       id: details.id,
       name: details.name,
       biography: details.biography || "No biography available.",
@@ -110,6 +109,11 @@ export async function getActorById(id: number, options?: { strict?: boolean; ski
       },
       similarActors: [], // Fetched via parallel route or separate call
     };
+
+    // Apply Policy Layer (Simulated Firestore Rules)
+    const { withActorPolicy } = await import("./actor.policy");
+    return withActorPolicy(actor, { ip: "127.0.0.1" }); // Default allowed IP
+
   } catch (error) {
     console.error(`[ActorDebug] CRITICAL ERROR fetching actor ${id}:`, error);
     return null;

@@ -127,20 +127,23 @@ export default function Navbar() {
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border">
-            <form
-              onSubmit={handleSearch}
-              className="relative mb-4"
-            >
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
-              <input
-                value={searchQuery}
-                onChange={(e) =>
-                  setSearchQuery(e.target.value)
-                }
-                placeholder="Search movies..."
-                className="bg-muted text-foreground pl-10 pr-4 py-2 rounded-xl w-full"
-              />
-            </form>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <form
+                onSubmit={handleSearch}
+                className="relative flex-1"
+              >
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                <input
+                  value={searchQuery}
+                  onChange={(e) =>
+                    setSearchQuery(e.target.value)
+                  }
+                  placeholder="Search..."
+                  className="bg-muted text-foreground pl-10 pr-4 py-2 rounded-xl w-full"
+                />
+              </form>
+              <ThemeToggle />
+            </div>
 
             <div className="flex flex-col gap-3">
               {navItems.map((item) => (

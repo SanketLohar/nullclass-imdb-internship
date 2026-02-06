@@ -45,29 +45,39 @@ export default function TrailerModal({
             role="dialog"
             aria-modal="true"
             aria-label="Movie Trailer"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
-            onClick={onClose}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={(e) => {
+                // Only close if clicking directly on the backdrop area, not on the content
+                if (e.target === e.currentTarget) {
+                    onClose();
+                }
+            }}
         >
+            {/* Backdrop visual */}
             <div
-                className="relative w-full max-w-5xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10"
-                onClick={(e) => e.stopPropagation()}
-            >
+                className="fixed inset-0 bg-black/90 backdrop-blur-sm -z-10"
+                aria-hidden="true"
+            />
+
+            <div className="relative w-full max-w-5xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10">
                 <button
                     ref={closeButtonRef}
                     onClick={onClose}
                     aria-label="Close trailer"
-                    className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    className="absolute top-4 right-4 z-30 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 >
                     <X className="w-6 h-6" />
                 </button>
 
                 <iframe
-                    className="w-full h-full"
-                    src={`https://www.youtube.com/embed/${videoKey}?autoplay=0&controls=1&mute=0&playsinline=1&rel=0&modestbranding=1`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    className="w-full h-full min-w-[300px] min-h-[200px]"
+                    width="100%"
+                    height="100%"
+                    src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&controls=1&playsinline=1&rel=0&enablejsapi=1&widget_referrer=${typeof window !== 'undefined' ? window.location.origin : ''}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowFullScreen
                     title="Movie Trailer"
-                    loading="eager"
+                    frameBorder="0"
                 />
             </div>
         </div>

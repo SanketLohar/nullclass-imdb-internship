@@ -19,6 +19,8 @@ export function getSeededReviews(movieId: number): Review[] {
             content: "Just finished watching this. Visuals were stunning but the pacing felt a bit off in the second half. Still worth a watch!",
             votes: { up: 2, down: 0, userVotes: {} },
             score: 1.0,
+            wilsonScore: 1.0,
+
             moderation: {
                 isFlagged: false,
                 flagsCount: 0,
@@ -44,6 +46,8 @@ export function getSeededReviews(movieId: number): Review[] {
             content: "An absolute masterpiece. The director managed to weave complex themes into a compelling narrative without it feeling forced. The cinematography is some of the best I've seen in years. Truly a cinematic experience that stays with you.",
             votes: { up: 145, down: 3, userVotes: {} },
             score: 0.98,
+            wilsonScore: 0.98,
+
             moderation: {
                 isFlagged: false,
                 flagsCount: 0,
@@ -69,6 +73,8 @@ export function getSeededReviews(movieId: number): Review[] {
             content: "I don't get the hype. The plot was predictable and the characters felt flat. It seems like style over substance to me. Maybe I missed something, but I was bored throughout.",
             votes: { up: 42, down: 38, userVotes: {} },
             score: 0.52,
+            wilsonScore: 0.52,
+
             moderation: {
                 isFlagged: false,
                 flagsCount: 0,

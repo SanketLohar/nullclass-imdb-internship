@@ -81,7 +81,7 @@ export default async function ActorPage({
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Cover */}
-      <div className="relative h-[420px] rounded-xl overflow-hidden mb-8">
+      <div className="relative h-[300px] md:h-[420px] rounded-xl overflow-hidden mb-8">
         <div className="absolute inset-0 bg-muted">
           <Image
             src={actor.image}
@@ -100,19 +100,30 @@ export default async function ActorPage({
               alt={actor.name}
               width={180}
               height={180}
-              className="rounded-xl border-4 border-background object-cover"
+              className="rounded-xl border-4 border-background object-cover hidden md:block"
+            />
+            {/* Mobile-only avatar shown via different layout or just rely on background? 
+                Actually, let's keep it simple. The big avatar might be too big for mobile. 
+                Let's make it responsive or hide it on small screens and use just the text.
+            */}
+            <Image
+              src={actor.image}
+              alt={actor.name}
+              width={120}
+              height={120}
+              className="rounded-xl border-4 border-background object-cover md:hidden"
             />
 
             <div>
-              <h1 className="text-4xl font-bold mb-3">
+              <h1 className="text-3xl md:text-4xl font-bold mb-3">
                 {actor.name}
               </h1>
 
-              <div className="flex gap-6">
-                <Stat icon={<Star aria-hidden="true" />} text={`${actor.stats.avgRating.toFixed(1)} Rating`} />
+              <div className="flex flex-wrap gap-4 md:gap-6">
+                <Stat icon={<Star aria-hidden="true" size={16} />} text={`${actor.stats.avgRating.toFixed(1)} Rating`} />
                 {actor.stats.totalAwards > 0 && (
                   <Stat
-                    icon={<Award aria-hidden="true" />}
+                    icon={<Award aria-hidden="true" size={16} />}
                     text={`${actor.stats.totalAwards} Awards`}
                   />
                 )}
@@ -183,7 +194,7 @@ export default async function ActorPage({
               Known For
             </h2>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {actor.knownFor.map((movie) => (
                 <Link
                   key={movie.id}
