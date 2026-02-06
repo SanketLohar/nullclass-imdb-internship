@@ -2,6 +2,7 @@ import { tmdbService } from "@/lib/tmdb/tmdb.service";
 import Link from "next/link";
 import Image from "next/image";
 import ActorCard from "@/components/actors/ActorCard.client";
+import OfflineBoundary from "@/components/system/OfflineBoundary";
 
 // Force dynamic rendering to ensure fresh data, but we can cache the API call
 export const dynamic = "force-dynamic";
@@ -44,27 +45,29 @@ export default async function ActorsPage() {
         .slice(0, 30); // Show top 30
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">Popular Actors</h1>
+        <OfflineBoundary>
+            <div className="container mx-auto px-4 py-8">
+                <h1 className="text-3xl font-bold mb-8">Popular Actors</h1>
 
-            {actors.length === 0 ? (
-                <div className="text-center py-20 text-muted-foreground">
-                    <p className="text-lg">Unable to load actors at this time.</p>
-                    <p className="text-sm mt-2 opacity-70">Please check your internet connection and try again.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {actors.map((actor) => (
-                        <ActorCard
-                            key={actor.id}
-                            id={actor.id}
-                            name={actor.name}
-                            image={actor.image}
-                            knownFor={actor.knownFor}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
+                {actors.length === 0 ? (
+                    <div className="text-center py-20 text-muted-foreground">
+                        <p className="text-lg">Unable to load actors at this time.</p>
+                        <p className="text-sm mt-2 opacity-70">Please check your internet connection and try again.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                        {actors.map((actor) => (
+                            <ActorCard
+                                key={actor.id}
+                                id={actor.id}
+                                name={actor.name}
+                                image={actor.image}
+                                knownFor={actor.knownFor}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </OfflineBoundary>
     );
 }

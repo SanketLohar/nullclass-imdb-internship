@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import { tmdbService } from "@/lib/tmdb/tmdb.service";
 import MovieCard from "@/components/MovieCard";
 import OfflineError from "@/components/ui/OfflineError";
+import { useNetworkStatus } from "@/lib/network/useNetworkStatus";
+import OfflineFallback from "@/components/system/OfflineFallback";
 
 type Movie = {
     id: number;
@@ -18,11 +20,17 @@ type Movie = {
 };
 
 export default function MoviesClient() {
+    const { isOffline } = useNetworkStatus();
     const searchParams = useSearchParams();
     const search = searchParams.get("search");
     const [movies, setMovies] = useState<Movie[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!isOffline); // Don't load if already offline
     const [error, setError] = useState<Error | null>(null);
+
+    // Show offline UI immediately if offline - BEFORE any effects run
+    if (isOffline) {
+        return <OfflineFallback />;
+    }
 
     useEffect(() => {
         async function fetchMovies() {
@@ -74,8 +82,7 @@ export default function MoviesClient() {
         fetchMovies();
     }, [search]);
 
-    // Show error fallback UI (matches error boundary style)
-    // Show error fallback UI (matches error boundary style)
+    // Show error fallback UI
     if (error) {
         return <OfflineError />;
     }

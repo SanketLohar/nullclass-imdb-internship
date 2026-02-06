@@ -5,6 +5,7 @@ import { MOVIES } from "@/data/movies";
 import Link from "next/link";
 import Image from "next/image";
 import MovieCard from "@/components/MovieCard";
+import OfflineBoundary from "@/components/system/OfflineBoundary";
 
 export default async function TopRatedPage() {
   // Fetch from TMDb
@@ -39,38 +40,40 @@ export default async function TopRatedPage() {
     }));
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold mb-8">Top Rated Movies</h1>
+    <OfflineBoundary>
+      <div className="container mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold mb-8">Top Rated Movies</h1>
 
-      <Suspense
-        fallback={
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                <div key={i} className="h-96 bg-zinc-900/60 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          }
+        >
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-              <div key={i} className="h-96 bg-zinc-900/60 rounded-lg animate-pulse" />
+            {movies.map((movie) => (
+              <Link
+                key={movie.id}
+                href={`/movies/${movie.id}`}
+                className="block h-full"
+              >
+                <MovieCard
+                  id={movie.id}
+                  title={movie.title}
+                  rating={movie.rating}
+                  image={movie.posterUrl} // Use poster as main image for card
+                  posterUrl={movie.posterUrl}
+                  year={movie.releaseYear}
+                  genre={movie.genres}
+                />
+              </Link>
             ))}
           </div>
-        }
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {movies.map((movie) => (
-            <Link
-              key={movie.id}
-              href={`/movies/${movie.id}`}
-              className="block h-full"
-            >
-              <MovieCard
-                id={movie.id}
-                title={movie.title}
-                rating={movie.rating}
-                image={movie.posterUrl} // Use poster as main image for card
-                posterUrl={movie.posterUrl}
-                year={movie.releaseYear}
-                genre={movie.genres}
-              />
-            </Link>
-          ))}
-        </div>
-      </Suspense>
-    </div>
+        </Suspense>
+      </div>
+    </OfflineBoundary>
   );
 }

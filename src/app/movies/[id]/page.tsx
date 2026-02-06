@@ -4,6 +4,7 @@ import { tmdbService } from "@/lib/tmdb/tmdb.service";
 import { getMovieAwards } from "@/lib/omdb/omdb.service";
 import TrailerPlayer from "@/components/movies/TrailerPlayer";
 import MovieHero from "@/components/movies/MovieHero.client";
+import OfflineBoundary from "@/components/system/OfflineBoundary";
 
 /* ---------------- FETCH ---------------- */
 
@@ -62,17 +63,19 @@ export default async function MovieDetailsPage(props: {
   if (!movie) notFound();
 
   return (
-    <>
-      {/* ✅ URL DRIVEN TRAILER */}
-      {movie.trailerKey && (
-        <TrailerPlayer
-          videoKey={movie.trailerKey}
-          initialPlay={searchParams.play === "true"}
-        />
-      )}
+    <OfflineBoundary>
+      <>
+        {/* ✅ URL DRIVEN TRAILER */}
+        {movie.trailerKey && (
+          <TrailerPlayer
+            videoKey={movie.trailerKey}
+            initialPlay={searchParams.play === "true"}
+          />
+        )}
 
-      {/* ✅ HERO */}
-      <MovieHero movie={movie} />
-    </>
+        {/* ✅ HERO */}
+        <MovieHero movie={movie} />
+      </>
+    </OfflineBoundary>
   );
 }

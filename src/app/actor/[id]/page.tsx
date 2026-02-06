@@ -9,6 +9,7 @@ import {
   Star,
   Twitter,
 } from "lucide-react";
+import OfflineBoundary from "@/components/system/OfflineBoundary";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -79,159 +80,161 @@ export default async function ActorPage({
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Cover */}
-      <div className="relative h-[300px] md:h-[420px] rounded-xl overflow-hidden mb-8">
-        <div className="absolute inset-0 bg-muted">
-          <Image
-            src={actor.image}
-            alt={actor.name}
-            fill
-            priority
-            className="object-cover object-top opacity-40 blur-3xl scale-110"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-
-        <div className="relative h-full flex items-end pb-8 px-6">
-          <div className="flex items-end gap-8">
+    <OfflineBoundary>
+      <div className="container mx-auto px-4 py-8">
+        {/* Cover */}
+        <div className="relative h-[300px] md:h-[420px] rounded-xl overflow-hidden mb-8">
+          <div className="absolute inset-0 bg-muted">
             <Image
               src={actor.image}
               alt={actor.name}
-              width={180}
-              height={180}
-              className="rounded-xl border-4 border-background object-cover hidden md:block"
+              fill
+              priority
+              className="object-cover object-top opacity-40 blur-3xl scale-110"
             />
-            {/* Mobile-only avatar shown via different layout or just rely on background? 
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+
+          <div className="relative h-full flex items-end pb-8 px-6">
+            <div className="flex items-end gap-8">
+              <Image
+                src={actor.image}
+                alt={actor.name}
+                width={180}
+                height={180}
+                className="rounded-xl border-4 border-background object-cover hidden md:block"
+              />
+              {/* Mobile-only avatar shown via different layout or just rely on background? 
                 Actually, let's keep it simple. The big avatar might be too big for mobile. 
                 Let's make it responsive or hide it on small screens and use just the text.
             */}
-            <Image
-              src={actor.image}
-              alt={actor.name}
-              width={120}
-              height={120}
-              className="rounded-xl border-4 border-background object-cover md:hidden"
-            />
+              <Image
+                src={actor.image}
+                alt={actor.name}
+                width={120}
+                height={120}
+                className="rounded-xl border-4 border-background object-cover md:hidden"
+              />
 
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-3">
-                {actor.name}
-              </h1>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-3">
+                  {actor.name}
+                </h1>
 
-              <div className="flex flex-wrap gap-4 md:gap-6">
-                <Stat icon={<Star aria-hidden="true" size={16} />} text={`${actor.stats.avgRating.toFixed(1)} Rating`} />
-                {actor.stats.totalAwards > 0 && (
-                  <Stat
-                    icon={<Award aria-hidden="true" size={16} />}
-                    text={`${actor.stats.totalAwards} Awards`}
-                  />
-                )}
+                <div className="flex flex-wrap gap-4 md:gap-6">
+                  <Stat icon={<Star aria-hidden="true" size={16} />} text={`${actor.stats.avgRating.toFixed(1)} Rating`} />
+                  {actor.stats.totalAwards > 0 && (
+                    <Stat
+                      icon={<Award aria-hidden="true" size={16} />}
+                      text={`${actor.stats.totalAwards} Awards`}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="grid md:grid-cols-3 gap-8">
-        {/* Sidebar */}
-        <aside className="space-y-6 sticky top-24">
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="font-semibold mb-4">
-              Personal Info
-            </h3>
-            <Info label="Born" value={actor.birthDate} />
-            <Info
-              label="Birthplace"
-              value={actor.birthPlace}
-            />
-            <Info
-              label="Movies"
-              value={`${actor.stats.moviesCount}`}
-            />
-          </div>
-
-          {(actor.socialMedia.instagram || actor.socialMedia.twitter || actor.socialMedia.imdb) && (
+        {/* Content */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Sidebar */}
+          <aside className="space-y-6 sticky top-24">
             <div className="bg-card border border-border rounded-xl p-6">
               <h3 className="font-semibold mb-4">
-                Social
+                Personal Info
               </h3>
-              <div className="flex gap-4">
-                {actor.socialMedia.instagram && (
-                  <a href={actor.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit Instagram">
-                    <Instagram aria-hidden="true" />
-                  </a>
-                )}
-                {actor.socialMedia.twitter && (
-                  <a href={actor.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit Twitter">
-                    <Twitter aria-hidden="true" />
-                  </a>
-                )}
-                {actor.socialMedia.imdb && (
-                  <a href={actor.socialMedia.imdb} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit IMDb">
-                    IMDb
-                  </a>
-                )}
+              <Info label="Born" value={actor.birthDate} />
+              <Info
+                label="Birthplace"
+                value={actor.birthPlace}
+              />
+              <Info
+                label="Movies"
+                value={`${actor.stats.moviesCount}`}
+              />
+            </div>
+
+            {(actor.socialMedia.instagram || actor.socialMedia.twitter || actor.socialMedia.imdb) && (
+              <div className="bg-card border border-border rounded-xl p-6">
+                <h3 className="font-semibold mb-4">
+                  Social
+                </h3>
+                <div className="flex gap-4">
+                  {actor.socialMedia.instagram && (
+                    <a href={actor.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit Instagram">
+                      <Instagram aria-hidden="true" />
+                    </a>
+                  )}
+                  {actor.socialMedia.twitter && (
+                    <a href={actor.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit Twitter">
+                      <Twitter aria-hidden="true" />
+                    </a>
+                  )}
+                  {actor.socialMedia.imdb && (
+                    <a href={actor.socialMedia.imdb} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition-colors" aria-label="Visit IMDb">
+                      IMDb
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </aside>
+            )}
+          </aside>
 
-        {/* Main */}
-        <main className="md:col-span-2 space-y-12">
-          <section>
-            <h2 className="text-2xl font-bold mb-4">
-              Biography
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              {actor.biography}
-            </p>
-          </section>
+          {/* Main */}
+          <main className="md:col-span-2 space-y-12">
+            <section>
+              <h2 className="text-2xl font-bold mb-4">
+                Biography
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                {actor.biography}
+              </p>
+            </section>
 
-          <section>
-            <h2 className="text-2xl font-bold mb-6">
-              Known For
-            </h2>
+            <section>
+              <h2 className="text-2xl font-bold mb-6">
+                Known For
+              </h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {actor.knownFor.map((movie) => (
-                <Link
-                  key={movie.id}
-                  href={`/movies/${movie.id}`}
-                  className="bg-card border border-border rounded-lg overflow-hidden hover:scale-105 transition-transform"
-                >
-                  <div className="relative aspect-[2/3]">
-                    <Image
-                      src={movie.image}
-                      alt={movie.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute top-3 right-3 bg-black/70 px-2 py-1 rounded-md flex gap-1 text-yellow-400 text-sm">
-                      <Star className="w-4 h-4 fill-current" aria-hidden="true" />
-                      {movie.rating}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                {actor.knownFor.map((movie) => (
+                  <Link
+                    key={movie.id}
+                    href={`/movies/${movie.id}`}
+                    className="bg-card border border-border rounded-lg overflow-hidden hover:scale-105 transition-transform"
+                  >
+                    <div className="relative aspect-[2/3]">
+                      <Image
+                        src={movie.image}
+                        alt={movie.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute top-3 right-3 bg-black/70 px-2 py-1 rounded-md flex gap-1 text-yellow-400 text-sm">
+                        <Star className="w-4 h-4 fill-current" aria-hidden="true" />
+                        {movie.rating}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="p-4">
-                    <h3 className="font-semibold">
-                      {movie.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      as {movie.role}
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                      {movie.year}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </main>
+                    <div className="p-4">
+                      <h3 className="font-semibold">
+                        {movie.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        as {movie.role}
+                      </p>
+                      <p className="text-xs text-muted-foreground/70">
+                        {movie.year}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          </main>
+        </div>
       </div>
-    </div>
+    </OfflineBoundary>
   );
 }
 
