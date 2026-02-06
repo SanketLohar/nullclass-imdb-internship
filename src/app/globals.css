@@ -98,3 +98,19 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Prevent image dragging */
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  pointer-events: auto;
+}
+
+/* Ensure interactive elements still work */
+button img,
+a img {
+  pointer-events: none;
+}
